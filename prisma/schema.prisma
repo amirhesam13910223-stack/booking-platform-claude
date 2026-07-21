@@ -1,0 +1,617 @@
+// ============================================================
+// PRISMA SCHEMA — Booking Platform
+// این schema کل چرخه‌ی محصول (User/Business/Booking/Payment/
+// Loyalty/Review/Dispute/Audit) رو پوشش می‌ده. تمام روابط
+// حساس (رزرو، پرداخت) با تراکنش و قفل سمت اپلیکیشن مدیریت
+// میشن، نه فقط با این schema.
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// هویت و احراز هویت
+// ------------------------------------------------------------
+
+enum GlobalRole {
+  USER   // نقش پیش‌فرض هر حساب
+  ADMIN  // دسترسی کامل پنل مدیریت پلتفرم
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED // soft delete برای حفظ سوابق مالی طبق الزامات قانونی
+}
+
+model User {
+  id            String        @id @default(uuid())
+  phone         String        @unique
+  email         String?       @unique
+  passwordHash  String
+  fullName      String
+  avatarUrl     String?
+  globalRole    GlobalRole    @default(USER)
+  status        AccountStatus @default(ACTIVE)
+  phoneVerified Boolean       @default(false)
+  emailVerified Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  deletedAt     DateTime?     // soft delete timestamp
+
+  // روابط
+  ownedBusinesses  Business[]        @relation("BusinessOwner")
+  staffMemberships StaffMember[]
+  bookings         Booking[]
+  wallet           Wallet?
+  loyaltyAccount   LoyaltyAccount?
+  reviews          Review[]
+  refreshTokens    RefreshToken[]
+  ticketsOpened    Ticket[]          @relation("TicketOpenedBy")
+  ticketMessages   TicketMessage[]
+  referralsAsFrom  Referral[]        @relation("ReferralFrom")
+  referralsAsTo    Referral[]        @relation("ReferralTo")
+  auditLogs        AuditLog[]
+  notifications    Notification[]
+  otpCodes         OtpCode[]
+
+  @@index([phone])
+  @@index([email])
+}
+
+// کدهای OTP جدا از User نگه داشته میشن تا امکان rate-limit و
+// انقضای مستقل داشته باشن و لاگین با پسورد رو کند نکنن.
+model OtpCode {
+  id        String   @id @default(uuid())
+  userId    String?  // ممکنه قبل از ساخت اکانت هم لازم باشه (ثبت‌نام)
+  phone     String
+  codeHash  String   // هش OTP، هرگز plain text ذخیره نمیشه
+  purpose   String   // REGISTER | LOGIN | RESET_PASSWORD
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  consumedAt DateTime?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([phone, purpose])
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  userId     String
+  tokenHash  String    @unique // هش توکن، نه خود توکن
+  deviceInfo String?
+  ipAddress  String?
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+// ------------------------------------------------------------
+// کسب‌وکار
+// ------------------------------------------------------------
+
+enum BusinessStatus {
+  PENDING_REVIEW // منتظر بررسی مدارک توسط ادمین
+  APPROVED
+  REJECTED
+  SUSPENDED      // تعلیق‌شده توسط ادمین بعد از تخلف
+}
+
+model Business {
+  id           String         @id @default(uuid())
+  ownerId      String
+  name         String
+  category     String         // دسته‌بندی صنف
+  description  String?
+  logoUrl      String?
+  status       BusinessStatus @default(PENDING_REVIEW)
+  rejectReason String?
+  legalId      String?        // کد ملی/شناسه حقوقی
+  ibanNumber   String?        // شماره شبا برای تسویه‌حساب
+  commissionPercent Decimal   @default(10) @db.Decimal(5, 2)
+  cancellationPolicy Json     // { freeCancelHours, feePercent }
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  owner       User             @relation("BusinessOwner", fields: [ownerId], references: [id])
+  branches    Branch[]
+  services    Service[]
+  staff       StaffMember[]
+  documents   BusinessDocument[]
+  bookings    Booking[]
+  reviews     Review[]
+  coupons     Coupon[]
+  settlements Settlement[]
+  tickets     Ticket[]
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+enum DocumentType {
+  NATIONAL_ID
+  BUSINESS_LICENSE
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model BusinessDocument {
+  id         String         @id @default(uuid())
+  businessId String
+  type       DocumentType
+  fileUrl    String
+  status     DocumentStatus @default(PENDING)
+  reviewedBy String?        // adminId
+  reviewedAt DateTime?
+  createdAt  DateTime       @default(now())
+
+  business Business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+}
+
+model Branch {
+  id         String   @id @default(uuid())
+  businessId String
+  name       String
+  address    String
+  latitude   Decimal  @db.Decimal(9, 6)
+  longitude  Decimal  @db.Decimal(9, 6)
+  phone      String?
+  createdAt  DateTime @default(now())
+
+  business     Business      @relation(fields: [businessId], references: [id])
+  staff        StaffMember[]
+  workingHours WorkingHours[]
+  holidays     Holiday[]
+  bookings     Booking[]
+
+  @@index([businessId])
+}
+
+enum StaffRole {
+  OWNER
+  MANAGER
+  STAFF
+}
+
+model StaffMember {
+  id         String    @id @default(uuid())
+  userId     String
+  businessId String
+  branchId   String?
+  role       StaffRole @default(STAFF)
+  specialty  String?
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  business Business @relation(fields: [businessId], references: [id])
+  branch   Branch?  @relation(fields: [branchId], references: [id])
+
+  workingHours WorkingHours[]
+  holidays     Holiday[]
+  services     ServiceStaff[]
+  bookings     Booking[]
+
+  @@unique([userId, businessId]) // یک نفر در یک کسب‌وکار فقط یک نقش دارد
+  @@index([businessId])
+  @@index([branchId])
+}
+
+// ساعات کاری هفتگی — می‌تونه مختص یک شعبه یا یک کارمند خاص باشه
+model WorkingHours {
+  id            String   @id @default(uuid())
+  branchId      String?
+  staffMemberId String?
+  dayOfWeek     Int      // 0=یکشنبه ... 6=شنبه
+  startTime     String   // "09:00"
+  endTime       String   // "18:00"
+
+  branch      Branch?      @relation(fields: [branchId], references: [id])
+  staffMember StaffMember? @relation(fields: [staffMemberId], references: [id])
+
+  @@index([branchId])
+  @@index([staffMemberId])
+}
+
+model Holiday {
+  id            String   @id @default(uuid())
+  branchId      String?
+  staffMemberId String?
+  date          DateTime
+  reason        String?
+
+  branch      Branch?      @relation(fields: [branchId], references: [id])
+  staffMember StaffMember? @relation(fields: [staffMemberId], references: [id])
+
+  @@index([branchId])
+  @@index([staffMemberId])
+}
+
+model Service {
+  id             String   @id @default(uuid())
+  businessId     String
+  name           String
+  description    String?
+  durationMinutes Int
+  price          Decimal  @db.Decimal(12, 2)
+  requiresDeposit Boolean @default(false)
+  depositPercent Decimal? @db.Decimal(5, 2)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  business Business       @relation(fields: [businessId], references: [id])
+  staff    ServiceStaff[]
+  bookings Booking[]
+
+  @@index([businessId])
+}
+
+// یک خدمت می‌تونه توسط چند کارمند ارائه بشه و بالعکس
+model ServiceStaff {
+  serviceId     String
+  staffMemberId String
+
+  service     Service     @relation(fields: [serviceId], references: [id])
+  staffMember StaffMember @relation(fields: [staffMemberId], references: [id])
+
+  @@id([serviceId, staffMemberId])
+}
+
+// ------------------------------------------------------------
+// رزرو — هسته‌ی حیاتی سیستم
+// ------------------------------------------------------------
+
+enum BookingStatus {
+  HOLD        // قفل موقت حین checkout، قبل از تایید نهایی
+  PENDING     // ثبت‌شده، منتظر تایید کسب‌وکار یا پرداخت
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Booking {
+  id            String        @id @default(uuid())
+  userId        String
+  businessId    String
+  branchId      String
+  staffMemberId String?
+  serviceId     String
+
+  startTime DateTime
+  endTime   DateTime
+  status    BookingStatus @default(HOLD)
+
+  priceSnapshot   Decimal @db.Decimal(12, 2) // قیمت لحظه‌ی رزرو (جدا از قیمت فعلی سرویس)
+  depositRequired Decimal @default(0) @db.Decimal(12, 2)
+  cancellationPolicySnapshot Json // کپی سیاست لغو در لحظه‌ی رزرو
+
+  holdExpiresAt DateTime? // انقضای قفل موقت soft-hold
+  cancelledAt   DateTime?
+  cancelReason  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id])
+  business    Business     @relation(fields: [businessId], references: [id])
+  branch      Branch       @relation(fields: [branchId], references: [id])
+  staffMember StaffMember? @relation(fields: [staffMemberId], references: [id])
+  service     Service      @relation(fields: [serviceId], references: [id])
+
+  payments Payment[]
+  review   Review?
+  tickets  Ticket[]
+
+  // جلوگیری از رزرو دوتایی هم‌زمان برای همون کارمند/بازه:
+  // این محدودیت روی سطح اپلیکیشن با transaction+lock هم تضمین میشه،
+  // این ایندکس فقط برای کارایی کوئری تداخل زمانیه.
+  @@index([staffMemberId, startTime, endTime])
+  @@index([branchId, startTime])
+  @@index([userId])
+  @@index([status])
+}
+
+// ------------------------------------------------------------
+// پرداخت و مالی
+// ------------------------------------------------------------
+
+enum PaymentType {
+  DEPOSIT
+  FULL_PAYMENT
+  REFUND
+  WALLET_TOPUP
+}
+
+enum PaymentStatus {
+  INITIATED
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  bookingId      String?
+  userId         String
+  type           PaymentType
+  status         PaymentStatus @default(INITIATED)
+  amount         Decimal       @db.Decimal(12, 2)
+  gateway        String        // zarinpal | idpay | wallet | ...
+  gatewayRefId   String?       // شناسه‌ی تراکنش سمت درگاه
+  callbackVerifiedAt DateTime? // زمان تایید معتبر callback سمت سرور
+  failureReason  String?
+  createdAt      DateTime      @default(now())
+
+  booking Booking? @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@index([userId])
+  @@index([gatewayRefId])
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  balance   Decimal  @default(0) @db.Decimal(12, 2)
+  updatedAt DateTime @updatedAt
+
+  user         User               @relation(fields: [userId], references: [id])
+  transactions WalletTransaction[]
+}
+
+enum WalletTxType {
+  TOPUP
+  PAYMENT
+  REFUND
+  ADMIN_ADJUSTMENT
+}
+
+model WalletTransaction {
+  id        String       @id @default(uuid())
+  walletId  String
+  type      WalletTxType
+  amount    Decimal      @db.Decimal(12, 2) // مثبت=واریز، منفی=برداشت
+  balanceAfter Decimal   @db.Decimal(12, 2) // snapshot موجودی بعد از تراکنش
+  referenceId String?    // مثلاً bookingId یا paymentId مرتبط
+  createdAt DateTime     @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+}
+
+enum SettlementStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+model Settlement {
+  id          String           @id @default(uuid())
+  businessId  String
+  periodStart DateTime
+  periodEnd   DateTime
+  grossAmount Decimal          @db.Decimal(14, 2)
+  commissionAmount Decimal     @db.Decimal(14, 2)
+  netAmount   Decimal          @db.Decimal(14, 2)
+  status      SettlementStatus @default(PENDING)
+  paidAt      DateTime?
+  createdAt   DateTime         @default(now())
+
+  business Business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+}
+
+// ------------------------------------------------------------
+// تخفیف، وفاداری، ارجاع
+// ------------------------------------------------------------
+
+enum CouponType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+model Coupon {
+  id           String     @id @default(uuid())
+  businessId   String?    // null یعنی کوپن سراسری پلتفرم
+  code         String     @unique
+  type         CouponType
+  value        Decimal    @db.Decimal(12, 2)
+  minPurchase  Decimal?   @db.Decimal(12, 2)
+  usageLimit   Int?
+  usageCount   Int        @default(0)
+  validFrom    DateTime
+  validTo      DateTime
+  isActive     Boolean    @default(true)
+
+  business Business? @relation(fields: [businessId], references: [id])
+
+  @@index([code])
+}
+
+model LoyaltyAccount {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  points    Int      @default(0)
+  tier      String   @default("BRONZE")
+  updatedAt DateTime @updatedAt
+
+  user         User                 @relation(fields: [userId], references: [id])
+  transactions LoyaltyTransaction[]
+}
+
+model LoyaltyTransaction {
+  id         String   @id @default(uuid())
+  accountId  String
+  points     Int      // مثبت=کسب امتیاز، منفی=مصرف
+  reason     String
+  referenceId String?
+  createdAt  DateTime @default(now())
+
+  account LoyaltyAccount @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+}
+
+enum ReferralStatus {
+  PENDING   // معرفی‌شده هنوز اولین خرید رو نکرده
+  REWARDED
+}
+
+model Referral {
+  id          String         @id @default(uuid())
+  referrerId  String
+  refereeId   String         @unique // هر کاربر فقط یک‌بار می‌تونه معرفی‌شده باشه
+  status      ReferralStatus @default(PENDING)
+  rewardedAt  DateTime?
+  createdAt   DateTime       @default(now())
+
+  referrer User @relation("ReferralFrom", fields: [referrerId], references: [id])
+  referee  User @relation("ReferralTo", fields: [refereeId], references: [id])
+
+  @@index([referrerId])
+}
+
+// ------------------------------------------------------------
+// نظرات
+// ------------------------------------------------------------
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Review {
+  id           String       @id @default(uuid())
+  bookingId    String       @unique // هر رزرو فقط یک نظر
+  userId       String
+  businessId   String
+  rating       Int          // 1..5
+  comment      String?
+  status       ReviewStatus @default(PENDING)
+  businessReply String?
+  createdAt    DateTime     @default(now())
+
+  booking  Booking  @relation(fields: [bookingId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+  business Business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+}
+
+// ------------------------------------------------------------
+// اطلاع‌رسانی
+// ------------------------------------------------------------
+
+enum NotificationChannel {
+  SMS
+  EMAIL
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+model Notification {
+  id        String              @id @default(uuid())
+  userId    String
+  channel   NotificationChannel
+  type      String              // BOOKING_CONFIRMED | REMINDER | ...
+  content   String
+  status    NotificationStatus  @default(QUEUED)
+  sentAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+// ------------------------------------------------------------
+// پشتیبانی و حل اختلاف
+// ------------------------------------------------------------
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model Ticket {
+  id         String       @id @default(uuid())
+  openedById String
+  businessId String?
+  bookingId  String?
+  subject    String
+  status     TicketStatus @default(OPEN)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  openedBy User      @relation("TicketOpenedBy", fields: [openedById], references: [id])
+  business Business? @relation(fields: [businessId], references: [id])
+  booking  Booking?  @relation(fields: [bookingId], references: [id])
+  messages TicketMessage[]
+
+  @@index([openedById])
+  @@index([status])
+}
+
+model TicketMessage {
+  id        String   @id @default(uuid())
+  ticketId  String
+  senderId  String
+  message   String
+  createdAt DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  sender User   @relation(fields: [senderId], references: [id])
+
+  @@index([ticketId])
+}
+
+// ------------------------------------------------------------
+// حسابرسی (Audit Log)
+// ------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?  // null یعنی سیستم (نه یک کاربر)
+  action     String   // مثلاً "BUSINESS_APPROVED", "BOOKING_CANCELLED_BY_ADMIN"
+  entityType String
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+}

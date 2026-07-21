@@ -1,0 +1,28 @@
+version: "3.9"
+
+# محیط توسعه‌ی محلی — Postgres و Redis. اپلیکیشن backend/frontend
+# در فازهای بعدی به‌صورت جدا (یا با override) به این کانتینرها اضافه میشن.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: booking
+      POSTGRES_PASSWORD: booking_dev_password
+      POSTGRES_DB: booking_platform
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:

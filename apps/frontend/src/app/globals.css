@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #2563EB;
+  --color-primary-dark: #1E40AF;
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-danger: #DC2626;
+  --color-neutral-900: #111827;
+  --color-neutral-500: #6B7280;
+  --color-neutral-100: #F3F4F6;
+  --color-surface: #FFFFFF;
+}
