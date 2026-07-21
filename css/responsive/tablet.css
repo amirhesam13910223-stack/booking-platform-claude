@@ -1,0 +1,69 @@
+ /* ============================================
+   TABLET - 641px تا 1024px
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    /* container */
+    .container {
+        padding: 0 var(--spacing-4);
+    }
+    
+    /* hero */
+    .hero-title {
+        font-size: var(--font-4xl);
+    }
+    
+    .hero-subtitle {
+        font-size: var(--font-base);
+    }
+    
+    /* ویژگی‌ها */
+    .features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-4);
+    }
+    
+    /* طرح‌ها */
+    .plans-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-4);
+    }
+    
+    .plan-card.featured {
+        transform: scale(1);
+        grid-column: span 2;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    /* آمار */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-4);
+    }
+    
+    /* حراج */
+    .auction-header {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .bid-item {
+        flex-wrap: wrap;
+    }
+    
+    /* فوتر */
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-6);
+    }
+    
+    /* گریدها */
+    .grid-cols-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت کارکنان | پلتفرم نوبت‌دهی هوشمند</title>
+    <link rel="stylesheet" href="../../css/core/reset.css">
+    <link rel="stylesheet" href="../../css/core/variables.css">
+    <link rel="stylesheet" href="../../css/core/typography.css">
+    <link rel="stylesheet" href="../../css/themes/light-theme.css">
+    <link rel="stylesheet" href="../../css/layouts/header.css">
+    <link rel="stylesheet" href="../../css/layouts/footer.css">
+    <link rel="stylesheet" href="../../css/components/buttons.css">
+    <link rel="stylesheet" href="../../css/components/forms.css">
+    <link rel="stylesheet" href="../../css/responsive/mobile.css">
+    <style>
+        .container-page { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .staff-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; }
+        .staff-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .staff-name { font-size: 1.125rem; font-weight: bold; }
+        .staff-role { color: var(--color-primary); font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .staff-info p { margin: 0.25rem 0; font-size: 0.875rem; color: var(--text-secondary); }
+        .staff-status { display: inline-block; padding: 0.25rem 0.5rem; border-radius: var(--radius-full); font-size: 0.75rem; }
+        .status-active { background: var(--color-success-soft); color: var(--color-success); }
+        .status-inactive { background: var(--color-danger-soft); color: var(--color-danger); }
+    </style>
+</head>
+<body>
+    <header class="main-header"><div class="container"><div class="header-wrapper"><div class="logo"><a href="../../index.html"><span class="logo-text">📅 نوبت‌دهی هوشمند</span></a></div><button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button><nav class="main-nav" id="mainNav"><ul class="nav-list"><li><a href="../../index.html" class="nav-link">خانه</a></li><li><a href="dashboard.html" class="nav-link">داشبورد</a></li><li><a href="bookings.html" class="nav-link">نوبت‌ها</a></li><li><a href="staff.html" class="nav-link active">کارکنان</a></li></ul></nav><div class="header-actions"><button class="theme-toggle" id="themeToggle">🌙</button><button class="btn btn-outline" id="logoutBtn">خروج</button></div></div></div></header>
+
+    <main><div class="container-page">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;"><h1>👥 مدیریت کارکنان</h1><button class="btn btn-primary" id="addStaffBtn">➕ افزودن کارمند</button></div>
+        <div class="staff-grid" id="staffGrid"></div>
+    </div></main>
+
+    <footer class="main-footer"><div class="container"><div class="footer-grid"><div class="footer-col"><h4>📅 نوبت‌دهی هوشمند</h4><p>پلتفرم پیشرو در ارائه خدمات رزرو آنلاین</p></div></div><div class="footer-bottom"><p>&copy; ۱۴۰۴ تمامی حقوق محفوظ است.</p></div></div></footer>
+
+    <script>
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
+        if (!token || !user || user.role !== 'business') { window.location.href = '../auth/login.html'; }
+
+        let staff = [{ id:1, name:'مریم احمدی', role:'مدیر', phone:'09121111111', email:'maryam@example.com', active:true },
+                     { id:2, name:'سارا کریمی', role:'آرایشگر', phone:'09122222222', email:'sara@example.com', active:true }];
+        function renderStaff() { document.getElementById('staffGrid').innerHTML = staff.map(s => `<div class="staff-card"><div class="staff-header"><span class="staff-name">${s.name}</span><span class="staff-status ${s.active ? 'status-active' : 'status-inactive'}">${s.active ? 'فعال' : 'غیرفعال'}</span></div><div class="staff-role">${s.role}</div><div class="staff-info"><p>📞 ${s.phone}</p><p>📧 ${s.email}</p></div><div class="staff-actions" style="margin-top:1rem"><button class="btn btn-outline btn-sm edit-staff" data-id="${s.id}">✏️ ویرایش</button><button class="btn btn-outline btn-sm delete-staff" data-id="${s.id}">🗑️ حذف</button></div></div>`).join('');
+            document.querySelectorAll('.edit-staff').forEach(btn => btn.addEventListener('click', (e) => { let id = parseInt(e.target.dataset.id); alert('ویرایش کارمند (در حال توسعه)'); }));
+            document.querySelectorAll('.delete-staff').forEach(btn => btn.addEventListener('click', (e) => { let id = parseInt(e.target.dataset.id); if(confirm('حذف شود؟')){ staff = staff.filter(s=>s.id!==id); renderStaff(); } }));
+        }
+        document.getElementById('addStaffBtn').addEventListener('click', () => { let name = prompt('نام کارمند:'); if(name){ let role = prompt('نقش:'); let phone = prompt('شماره تماس:'); staff.push({ id:Date.now(), name, role, phone, email:'', active:true }); renderStaff(); } });
+        renderStaff();
+
+        document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); sessionStorage.clear(); window.location.href = '../../index.html'; });
+        const mobileToggle = document.getElementById('mobileMenuToggle'), mainNav = document.getElementById('mainNav');
+        mobileToggle?.addEventListener('click', () => mainNav.classList.toggle('active'));
+        const themeToggle = document.getElementById('themeToggle');
+        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark-theme'); themeToggle.textContent = '☀️'; }
+        themeToggle?.addEventListener('click', () => { const html = document.documentElement; if (html.classList.contains('dark-theme')) { html.classList.remove('dark-theme'); localStorage.setItem('theme', 'light'); themeToggle.textContent = '🌙'; } else { html.classList.add('dark-theme'); localStorage.setItem('theme', 'dark'); themeToggle.textContent = '☀️'; } });
+    </script>
+</body>
+</html>

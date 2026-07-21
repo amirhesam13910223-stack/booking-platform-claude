@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ثبت‌نام | پلتفرم نوبت‌دهی هوشمند</title>
+    <link rel="stylesheet" href="../../css/core/reset.css">
+    <link rel="stylesheet" href="../../css/core/variables.css">
+    <link rel="stylesheet" href="../../css/core/typography.css">
+    <link rel="stylesheet" href="../../css/themes/light-theme.css">
+    <link rel="stylesheet" href="../../css/components/buttons.css">
+    <link rel="stylesheet" href="../../css/components/forms.css">
+    <link rel="stylesheet" href="../../css/components/cards.css">
+    <link rel="stylesheet" href="../../css/responsive/mobile.css">
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--color-primary-soft) 0%, var(--bg-secondary) 100%);
+            padding: 2rem;
+        }
+        .auth-card {
+            max-width: 500px;
+            width: 100%;
+            padding: 2rem;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .auth-logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+        .auth-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .auth-subtitle {
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+        }
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .auth-footer a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+        .error-message {
+            background: var(--color-danger-soft);
+            color: var(--color-danger);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+        .success-message {
+            background: var(--color-success-soft);
+            color: var(--color-success);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .password-strength-bar {
+            width: 0%;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        .password-strength-text {
+            font-size: 0.7rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="card auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">📅 نوبت‌دهی هوشمند</div>
+                <h1 class="auth-title">ثبت‌نام در پلتفرم</h1>
+                <p class="auth-subtitle">همین حالا ثبت‌نام کنید و از خدمات ویژه بهره‌مند شوید</p>
+            </div>
+            
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>نام کامل <span class="required-star">*</span></label>
+                    <input type="text" id="fullName" class="form-control" placeholder="نام و نام خانوادگی">
+                </div>
+                
+                <div class="form-group">
+                    <label>شماره تماس <span class="required-star">*</span></label>
+                    <input type="tel" id="phone" class="form-control" placeholder="۰۹۱۲۱۲۳۴۵۶۷">
+                </div>
+                
+                <div class="form-group">
+                    <label>ایمیل (اختیاری)</label>
+                    <input type="email" id="email" class="form-control" placeholder="example@gmail.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>رمز عبور <span class="required-star">*</span></label>
+                    <input type="password" id="password" class="form-control" placeholder="حداقل ۶ کاراکتر">
+                    <div class="password-strength">
+                        <div class="password-strength-bar" id="passwordStrength"></div>
+                    </div>
+                    <div class="password-strength-text" id="passwordStrengthText"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label>تکرار رمز عبور <span class="required-star">*</span></label>
+                    <input type="password" id="confirmPassword" class="form-control" placeholder="تکرار رمز عبور">
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="termsCheckbox"> <a href="terms.html" target="_blank">قوانین و مقررات</a> را می‌پذیرم
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block" id="submitBtn">ثبت‌نام</button>
+                
+                <div class="auth-footer">
+                    <a href="login.html">قبلاً ثبت‌نام کرده‌اید؟ وارد شوید</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('registerForm');
+        const fullNameInput = document.getElementById('fullName');
+        const phoneInput = document.getElementById('phone');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorDiv = document.getElementById('errorMessage');
+        const successDiv = document.getElementById('successMessage');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const passwordStrengthText = document.getElementById('passwordStrengthText');
+        
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        function showSuccess(message) {
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            let message = '';
+            let color = '';
+            
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            if (strength <= 2) {
+                message = 'ضعیف';
+                color = '#EF4444';
+            } else if (strength <= 4) {
+                message = 'متوسط';
+                color = '#F59E0B';
+            } else {
+                message = 'قوی';
+                color = '#10B981';
+            }
+            
+            passwordStrength.style.width = `${(strength / 6) * 100}%`;
+            passwordStrength.style.backgroundColor = color;
+            passwordStrengthText.textContent = `قدرت رمز عبور: ${message}`;
+            passwordStrengthText.style.color = color;
+        }
+        
+        function validateForm() {
+            const fullName = fullNameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (!fullName) {
+                showError('لطفاً نام کامل را وارد کنید');
+                fullNameInput.focus();
+                return false;
+            }
+            
+            if (!phone) {
+                showError('لطفاً شماره تماس را وارد کنید');
+                phoneInput.focus();
+                return false;
+            }
+            
+            const phoneRegex = /^09[0-9]{9}$/;
+            if (!phoneRegex.test(phone)) {
+                showError('شماره تماس معتبر نیست (مثال: 09121234567)');
+                phoneInput.focus();
+                return false;
+            }
+            
+            if (emailInput.value.trim()) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(emailInput.value.trim())) {
+                    showError('ایمیل معتبر نیست');
+                    emailInput.focus();
+                    return false;
+                }
+            }
+            
+            if (!password) {
+                showError('لطفاً رمز عبور را وارد کنید');
+                passwordInput.focus();
+                return false;
+            }
+            
+            if (password.length < 6) {
+                showError('رمز عبور باید حداقل ۶ کاراکتر باشد');
+                passwordInput.focus();
+                return false;
+            }
+            
+            if (password !== confirmPassword) {
+                showError('رمز عبور و تکرار آن مطابقت ندارند');
+                confirmPasswordInput.focus();
+                return false;
+            }
+            
+            if (!termsCheckbox.checked) {
+                showError('لطفاً قوانین و مقررات را بپذیرید');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        async function handleRegister(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) return;
+            
+            const fullName = fullNameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const email = emailInput.value.trim() || null;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> در حال ثبت‌نام...';
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // شبیه‌سازی ثبت‌نام موفق
+            const user = {
+                id: Date.now(),
+                name: fullName,
+                phone: phone,
+                email: email,
+                role: 'user',
+                createdAt: new Date().toISOString()
+            };
+            
+            localStorage.setItem('auth_token', 'demo_token_' + Date.now());
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            showSuccess('ثبت‌نام با موفقیت انجام شد! در حال انتقال...');
+            
+            setTimeout(() => {
+                window.location.href = '../../index.html';
+            }, 1500);
+        }
+        
+        passwordInput.addEventListener('input', (e) => {
+            checkPasswordStrength(e.target.value);
+        });
+        
+        form.addEventListener('submit', handleRegister);
+        
+        // بررسی توکن موجود
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        if (token) {
+            window.location.href = '../../index.html';
+        }
+    </script>
+</body>
+</html> 

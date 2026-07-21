@@ -1,0 +1,211 @@
+ /* ============================================
+   BUSINESS.CSS - استایل پنل کسب‌وکار
+   ============================================ */
+
+/* ===== هدر پنل ===== */
+.business-header {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    padding: var(--spacing-8);
+    border-radius: var(--radius-lg);
+    color: white;
+    margin-bottom: var(--spacing-8);
+}
+
+.business-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    flex-wrap: wrap;
+}
+
+.business-avatar {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-4xl);
+}
+
+.business-details h1 {
+    margin-bottom: var(--spacing-2);
+}
+
+.business-details p {
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+}
+
+/* ===== آمار داشبورد ===== */
+.business-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-8);
+}
+
+.stat-card {
+    background: var(--card-bg);
+    padding: var(--spacing-4);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.stat-card .stat-value {
+    font-size: var(--font-3xl);
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+.stat-card .stat-label {
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+}
+
+/* ===== ناوبری پنل ===== */
+.business-nav {
+    display: flex;
+    gap: var(--spacing-2);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-6);
+    flex-wrap: wrap;
+}
+
+.nav-tab {
+    padding: var(--spacing-3) var(--spacing-6);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border-bottom: 2px solid transparent;
+}
+
+.nav-tab:hover {
+    color: var(--color-primary);
+}
+
+.nav-tab.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+/* ===== مدیریت کارکنان ===== */
+.staff-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-4);
+}
+
+.staff-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+    display: flex;
+    gap: var(--spacing-4);
+}
+
+.staff-avatar {
+    width: 60px;
+    height: 60px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-2xl);
+}
+
+.staff-info h4 {
+    margin-bottom: var(--spacing-1);
+}
+
+.staff-info p {
+    font-size: var(--font-sm);
+    margin: 0;
+    color: var(--text-tertiary);
+}
+
+/* ===== مدیریت شعبات ===== */
+.branches-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--spacing-4);
+}
+
+.branch-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+}
+
+.branch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-3);
+    padding-bottom: var(--spacing-2);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.branch-status {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-full);
+    font-size: var(--font-xs);
+}
+
+.branch-status.active {
+    background: var(--color-success-soft);
+    color: var(--color-success);
+}
+
+.branch-status.inactive {
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+}
+
+/* ===== مدیریت خدمات ===== */
+.services-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-4);
+}
+
+.service-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+}
+
+.service-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-3);
+}
+
+.service-price {
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+.service-duration {
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+}
+
+/* ===== ریسپانسیو ===== */
+@media (max-width: 768px) {
+    .business-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .business-nav {
+        overflow-x: auto;
+        white-space: nowrap;
+        flex-wrap: nowrap;
+    }
+}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>گزارش مالی | پلتفرم نوبت‌دهی هوشمند</title>
+    <link rel="stylesheet" href="../../css/core/reset.css">
+    <link rel="stylesheet" href="../../css/core/variables.css">
+    <link rel="stylesheet" href="../../css/core/typography.css">
+    <link rel="stylesheet" href="../../css/themes/light-theme.css">
+    <link rel="stylesheet" href="../../css/layouts/header.css">
+    <link rel="stylesheet" href="../../css/layouts/footer.css">
+    <link rel="stylesheet" href="../../css/components/buttons.css">
+    <link rel="stylesheet" href="../../css/responsive/mobile.css">
+    <style>
+        .container-page { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .financial-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem; }
+        .income-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
+        .total-row { font-weight: bold; font-size: 1.125rem; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--color-primary); }
+    </style>
+</head>
+<body>
+    <header class="main-header"><div class="container"><div class="header-wrapper"><div class="logo"><a href="../../index.html"><span class="logo-text">📅 نوبت‌دهی هوشمند</span></a></div><button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button><nav class="main-nav" id="mainNav"><ul class="nav-list"><li><a href="../../index.html" class="nav-link">خانه</a></li><li><a href="dashboard.html" class="nav-link">داشبورد</a></li><li><a href="financials.html" class="nav-link active">مالی</a></li></ul></nav><div class="header-actions"><button class="theme-toggle" id="themeToggle">🌙</button><button class="btn btn-outline" id="logoutBtn">خروج</button></div></div></div></header>
+
+    <main><div class="container-page">
+        <h1 style="margin-bottom: 1.5rem;">💰 گزارش مالی</h1>
+        <div class="financial-card"><h3>📊 خلاصه درآمد</h3><div class="income-row"><span>درآمد ناخالص</span><span id="grossIncome">۰ تومان</span></div><div class="income-row"><span>کارمزد پلتفرم (۳%)</span><span id="commission">۰ تومان</span></div><div class="income-row"><span>تخفیف‌های اعمال شده</span><span id="discounts">۰ تومان</span></div><div class="total-row"><span>درآمد خالص</span><span id="netIncome">۰ تومان</span></div></div>
+        <div class="financial-card"><h3>📈 آمار</h3><div class="income-row"><span>تعداد نوبت‌ها</span><span id="bookingCount">۰</span></div><div class="income-row"><span>میانگین درآمد هر نوبت</span><span id="avgPerBooking">۰ تومان</span></div></div>
+    </div></main>
+
+    <footer class="main-footer"><div class="container"><div class="footer-grid"><div class="footer-col"><h4>📅 نوبت‌دهی هوشمند</h4><p>پلتفرم پیشرو در ارائه خدمات رزرو آنلاین</p></div></div><div class="footer-bottom"><p>&copy; ۱۴۰۴ تمامی حقوق محفوظ است.</p></div></div></footer>
+
+    <script>
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
+        if (!token || !user || user.role !== 'business') { window.location.href = '../auth/login.html'; }
+
+        let gross = 12450000, commission = Math.round(gross * 0.03), discounts = 500000, net = gross - commission - discounts, bookings = 128, avg = Math.round(net / bookings);
+        document.getElementById('grossIncome').textContent = gross.toLocaleString('fa-IR') + ' تومان';
+        document.getElementById('commission').textContent = commission.toLocaleString('fa-IR') + ' تومان';
+        document.getElementById('discounts').textContent = discounts.toLocaleString('fa-IR') + ' تومان';
+        document.getElementById('netIncome').textContent = net.toLocaleString('fa-IR') + ' تومان';
+        document.getElementById('bookingCount').textContent = bookings;
+        document.getElementById('avgPerBooking').textContent = avg.toLocaleString('fa-IR') + ' تومان';
+
+        document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); sessionStorage.clear(); window.location.href = '../../index.html'; });
+        const mobileToggle = document.getElementById('mobileMenuToggle'), mainNav = document.getElementById('mainNav');
+        mobileToggle?.addEventListener('click', () => mainNav.classList.toggle('active'));
+        const themeToggle = document.getElementById('themeToggle');
+        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark-theme'); themeToggle.textContent = '☀️'; }
+        themeToggle?.addEventListener('click', () => { const html = document.documentElement; if (html.classList.contains('dark-theme')) { html.classList.remove('dark-theme'); localStorage.setItem('theme', 'light'); themeToggle.textContent = '🌙'; } else { html.classList.add('dark-theme'); localStorage.setItem('theme', 'dark'); themeToggle.textContent = '☀️'; } });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تراکنش‌های مالی | پلتفرم نوبت‌دهی هوشمند</title>
+    <link rel="stylesheet" href="../../css/core/reset.css">
+    <link rel="stylesheet" href="../../css/core/variables.css">
+    <link rel="stylesheet" href="../../css/core/typography.css">
+    <link rel="stylesheet" href="../../css/themes/light-theme.css">
+    <link rel="stylesheet" href="../../css/layouts/header.css">
+    <link rel="stylesheet" href="../../css/layouts/footer.css">
+    <link rel="stylesheet" href="../../css/components/buttons.css">
+    <link rel="stylesheet" href="../../css/responsive/mobile.css">
+    <style>
+        .container-page { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+        .summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .summary-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1rem; text-align: center; }
+        .summary-value { font-size: 1.5rem; font-weight: bold; color: var(--color-primary); }
+        .transactions-table { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 1rem; text-align: right; border-bottom: 1px solid var(--border-color); }
+        th { background: var(--bg-secondary); font-weight: 600; }
+        .transaction-status { padding: 0.25rem 0.5rem; border-radius: var(--radius-full); font-size: 0.75rem; }
+        .status-success { background: var(--color-success-soft); color: var(--color-success); }
+        .status-failed { background: var(--color-danger-soft); color: var(--color-danger); }
+        .status-pending { background: var(--color-warning-soft); color: var(--color-warning); }
+    </style>
+</head>
+<body>
+    <header class="main-header"><div class="container"><div class="header-wrapper"><div class="logo"><a href="../../index.html"><span class="logo-text">📅 نوبت‌دهی هوشمند</span></a></div><button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button><nav class="main-nav" id="mainNav"><ul class="nav-list"><li><a href="../../index.html" class="nav-link">خانه</a></li><li><a href="dashboard.html" class="nav-link">داشبورد</a></li><li><a href="transactions.html" class="nav-link active">تراکنش‌ها</a></li></ul></nav><div class="header-actions"><button class="theme-toggle" id="themeToggle">🌙</button><button class="btn btn-outline" id="logoutBtn">خروج</button></div></div></div></header>
+
+    <main><div class="container-page">
+        <h1 style="margin-bottom: 1.5rem;">💰 تراکنش‌های مالی</h1>
+        <div class="summary-cards"><div class="summary-card"><div class="summary-value" id="totalTransactions">۱۲۴</div><div>کل تراکنش‌ها</div></div><div class="summary-card"><div class="summary-value" id="totalAmount">۱۲۴,۵۰۰,۰۰۰</div><div>مبلغ کل</div></div><div class="summary-card"><div class="summary-value" id="platformCommission">۳,۷۳۵,۰۰۰</div><div>کارمزد پلتفرم</div></div></div>
+        <div class="transactions-table"><table><thead><tr><th>کد تراکنش</th><th>کاربر</th><th>مبلغ</th><th>نوع</th><th>وضعیت</th><th>تاریخ</th></tr></thead><tbody id="transactionsBody"></tbody></table></div>
+    </div></main>
+
+    <footer class="main-footer"><div class="container"><div class="footer-grid"><div class="footer-col"><h4>📅 نوبت‌دهی هوشمند</h4><p>پلتفرم پیشرو در ارائه خدمات رزرو آنلاین</p></div></div><div class="footer-bottom"><p>&copy; ۱۴۰۴ تمامی حقوق محفوظ است.</p></div></div></footer>
+
+    <script>
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
+        if (!token || !user || user.role !== 'admin') { window.location.href = '../auth/login.html'; }
+        let transactions = [{ id:'TRX001', user:'سارا محمدی', amount:250000, type:'شارژ کیف پول', status:'success', date:'۱۴۰۳/۱۲/۱۵' }, { id:'TRX002', user:'سالن لیدا', amount:450000, type:'پرداخت نوبت', status:'success', date:'۱۴۰۳/۱۲/۱۴' }, { id:'TRX003', user:'مریم احمدی', amount:150000, type:'شارژ کیف پول', status:'pending', date:'۱۴۰۳/۱۲/۱۳' }];
+        document.getElementById('transactionsBody').innerHTML = transactions.map(t => `<tr><td>${t.id}</td><td>${t.user}</td><td>${t.amount.toLocaleString('fa-IR')} تومان</td><td>${t.type}</td><td><span class="transaction-status status-${t.status}">${t.status === 'success' ? 'موفق' : t.status === 'pending' ? 'در انتظار' : 'ناموفق'}</span></td><td>${t.date}</td></tr>`).join('');
+        document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); sessionStorage.clear(); window.location.href = '../../index.html'; });
+        const mobileToggle = document.getElementById('mobileMenuToggle'), mainNav = document.getElementById('mainNav');
+        mobileToggle?.addEventListener('click', () => mainNav.classList.toggle('active'));
+        const themeToggle = document.getElementById('themeToggle');
+        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark-theme'); themeToggle.textContent = '☀️'; }
+        themeToggle?.addEventListener('click', () => { const html = document.documentElement; if (html.classList.contains('dark-theme')) { html.classList.remove('dark-theme'); localStorage.setItem('theme', 'light'); themeToggle.textContent = '🌙'; } else { html.classList.add('dark-theme'); localStorage.setItem('theme', 'dark'); themeToggle.textContent = '☀️'; } });
+    </script>
+</body>
+</html>

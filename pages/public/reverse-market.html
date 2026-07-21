@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازار معکوس | پلتفرم نوبت‌دهی هوشمند</title>
+    <link rel="stylesheet" href="../../css/core/reset.css">
+    <link rel="stylesheet" href="../../css/core/variables.css">
+    <link rel="stylesheet" href="../../css/core/typography.css">
+    <link rel="stylesheet" href="../../css/themes/light-theme.css">
+    <link rel="stylesheet" href="../../css/layouts/header.css">
+    <link rel="stylesheet" href="../../css/layouts/footer.css">
+    <link rel="stylesheet" href="../../css/components/buttons.css">
+    <link rel="stylesheet" href="../../css/components/forms.css">
+    <link rel="stylesheet" href="../../css/components/cards.css">
+    <link rel="stylesheet" href="../../css/responsive/mobile.css">
+    <style>
+        .market-container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .create-request { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem; }
+        .request-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        .requests-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; }
+        .request-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; }
+        .request-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .budget { font-size: 1.25rem; font-weight: bold; color: var(--color-primary); }
+        .timer { color: var(--color-danger); font-family: monospace; margin: 0.5rem 0; }
+        .bid-list { margin-top: 1rem; }
+        .bid-item { display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid var(--border-color); }
+        .live-badge { background: var(--color-danger); color: white; padding: 0.25rem 0.5rem; border-radius: var(--radius-full); font-size: 0.75rem; animation: blink 1s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    </style>
+</head>
+<body>
+    <header class="main-header"><div class="container"><div class="header-wrapper"><div class="logo"><a href="home.html"><span class="logo-text">📅 نوبت‌دهی هوشمند</span></a></div><button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button><nav class="main-nav" id="mainNav"><ul class="nav-list"><li><a href="home.html" class="nav-link">خانه</a></li><li><a href="booking.html" class="nav-link">رزرو نوبت</a></li><li><a href="reverse-market.html" class="nav-link active nav-link-special">🔥 بازار معکوس</a></li></ul></nav><div class="header-actions"><button class="theme-toggle" id="themeToggle">🌙</button><button class="btn btn-outline" id="loginBtn">ورود</button><button class="btn btn-primary" id="registerBtn">ثبت‌نام</button></div></div></div></header>
+
+    <main><div class="market-container"><div class="create-request"><h3>🎯 ایجاد درخواست جدید</h3><div class="request-form"><input type="text" id="requestService" class="form-control" placeholder="نوع خدمت"><input type="number" id="requestBudget" class="form-control" placeholder="حداکثر بودجه (تومان)"><input type="date" id="requestDate" class="form-control"><button class="btn btn-primary" id="createRequestBtn">ثبت درخواست</button></div></div>
+    <h3>🔥 درخواست‌های فعال</h3><div id="requestsList" class="requests-list"></div></div></main>
+
+    <footer class="main-footer"><div class="container"><div class="footer-grid"><div class="footer-col"><h4>📅 نوبت‌دهی هوشمند</h4><p>پلتفرم پیشرو در ارائه خدمات رزرو آنلاین</p></div></div><div class="footer-bottom"><p>&copy; ۱۴۰۴ تمامی حقوق محفوظ است.</p></div></div></footer>
+
+    <script>
+        let requests = [{ id:1, service:'کوتاهی مو زنانه', budget:250000, date:'۱۴۰۳/۱۲/۲۰', bids:[{ business:'سالن لیدا', price:180000 }] }];
+        function renderRequests() { document.getElementById('requestsList').innerHTML = requests.map(r => `<div class="request-card"><div class="request-header"><span class="live-badge">🔴 زنده</span><span class="budget">حداکثر ${r.budget.toLocaleString('fa-IR')} تومان</span></div><h4>${r.service}</h4><p>📅 ${r.date}</p><div class="timer">⏱️ زمان باقی‌مانده: ۱۲:۳۴</div><div class="bid-list"><div class="bid-item"><span>🏆 بهترین پیشنهاد</span><span class="budget">${r.bids[0]?.price.toLocaleString('fa-IR')} تومان</span></div></div><button class="btn btn-primary btn-sm join-bid" data-id="${r.id}">شرکت در حراج</button></div>`).join('');
+            document.querySelectorAll('.join-bid').forEach(btn => btn.addEventListener('click', (e) => { alert('شما به حراج پیوستید! کسب‌وکارها به زودی پیشنهاد می‌دهند'); })); }
+        document.getElementById('createRequestBtn').addEventListener('click', () => { const service=document.getElementById('requestService').value, budget=parseInt(document.getElementById('requestBudget').value), date=document.getElementById('requestDate').value; if(service&&budget&&date){ requests.unshift({ id:Date.now(), service, budget, date, bids:[] }); renderRequests(); document.getElementById('requestService').value=''; document.getElementById('requestBudget').value=''; document.getElementById('requestDate').value=''; alert('درخواست شما ثبت شد'); } else { alert('لطفاً تمام فیلدها را پر کنید'); } });
+        renderRequests();
+        document.getElementById('loginBtn').addEventListener('click', () => window.location.href = '../auth/login.html');
+        document.getElementById('registerBtn').addEventListener('click', () => window.location.href = '../auth/register.html');
+        const mobileToggle = document.getElementById('mobileMenuToggle'), mainNav = document.getElementById('mainNav');
+        mobileToggle?.addEventListener('click', () => mainNav.classList.toggle('active'));
+        const themeToggle = document.getElementById('themeToggle');
+        if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark-theme'); themeToggle.textContent = '☀️'; }
+        themeToggle?.addEventListener('click', () => { const html = document.documentElement; if (html.classList.contains('dark-theme')) { html.classList.remove('dark-theme'); localStorage.setItem('theme', 'light'); themeToggle.textContent = '🌙'; } else { html.classList.add('dark-theme'); localStorage.setItem('theme', 'dark'); themeToggle.textContent = '☀️'; } });
+    </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+/* ============================================
+   DARK THEME - تم تاریک
+   ============================================ */
+
+   .dark-theme {
+    --bg-primary: #0F172A;
+    --bg-secondary: #1E293B;
+    --bg-tertiary: #334155;
+    --text-primary: #F1F5F9;
+    --text-secondary: #CBD5E1;
+    --text-tertiary: #94A3B8;
+    --border-color: #334155;
+    --card-bg: #1E293B;
+}
+
+.dark-theme body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.dark-theme .card,
+.dark-theme .modal-content,
+.dark-theme .auction-card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.dark-theme .btn-outline {
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.dark-theme .btn-outline:hover {
+    background-color: var(--bg-tertiary);
+    border-color: var(--color-primary);
+    color: var(--color-primary-light);
+}
+
+.dark-theme .feature-card,
+.dark-theme .plan-card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.dark-theme .hero-section {
+    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+}
+
+.dark-theme .bid-list {
+    background-color: var(--bg-tertiary);
+}

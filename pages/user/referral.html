@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برنامه معرفی دوستان | پلتفرم نوبت‌دهی هوشمند</title>
+    <link rel="stylesheet" href="../../css/core/reset.css">
+    <link rel="stylesheet" href="../../css/core/variables.css">
+    <link rel="stylesheet" href="../../css/core/typography.css">
+    <link rel="stylesheet" href="../../css/themes/light-theme.css">
+    <link rel="stylesheet" href="../../css/layouts/header.css">
+    <link rel="stylesheet" href="../../css/layouts/footer.css">
+    <link rel="stylesheet" href="../../css/components/buttons.css">
+    <link rel="stylesheet" href="../../css/components/cards.css">
+    <link rel="stylesheet" href="../../css/responsive/mobile.css">
+    <style>
+        .referral-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .hero-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .referral-code-box {
+            background: rgba(255,255,255,0.2);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin: 1rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .referral-code {
+            font-size: 1.25rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--color-primary);
+        }
+        .how-it-works {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .step-list {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .step-item {
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+            padding: 0.5rem;
+        }
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--color-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+        }
+        .reward-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .step-list {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="container">
+            <div class="header-wrapper">
+                <div class="logo">
+                    <a href="../../index.html">
+                        <span class="logo-text">📅 نوبت‌دهی هوشمند</span>
+                    </a>
+                </div>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+                <nav class="main-nav" id="mainNav">
+                    <ul class="nav-list">
+                        <li><a href="../../index.html" class="nav-link">خانه</a></li>
+                        <li><a href="../public/booking.html" class="nav-link">رزرو نوبت</a></li>
+                        <li><a href="dashboard.html" class="nav-link">پنل کاربری</a></li>
+                        <li><a href="referral.html" class="nav-link active">معرفی دوستان</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <button class="theme-toggle" id="themeToggle">🌙</button>
+                    <button class="btn btn-outline" id="logoutBtn">خروج</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="referral-container">
+            <div class="hero-section">
+                <div class="hero-title">🎁 برنامه معرفی دوستان</div>
+                <p>دوستان خود را دعوت کنید و جایزه بگیرید!</p>
+                <div class="referral-code-box">
+                    <span>کد معرفی شما:</span>
+                    <span class="referral-code" id="referralCode">LOADING...</span>
+                    <button class="btn btn-sm" id="copyCodeBtn" style="background: white; color: var(--color-primary);">📋 کپی کد</button>
+                </div>
+                <button class="btn" id="shareBtn" style="background: white; color: var(--color-primary);">📱 اشتراک‌گذاری لینک</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalReferrals">۰</div>
+                    <div>تعداد معرفی‌ها</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="successfulReferrals">۰</div>
+                    <div>معرفی موفق</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="earnedRewards">۰ تومان</div>
+                    <div>جایزه کسب شده</div>
+                </div>
+            </div>
+
+            <div class="how-it-works">
+                <h3>📌 چگونه کار می‌کند؟</h3>
+                <div class="step-list">
+                    <div class="step-item">
+                        <div class="step-number">۱</div>
+                        <p>کد یا لینک معرفی خود را با دوستان به اشتراک بگذارید</p>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">۲</div>
+                        <p>دوستان شما با کد شما ثبت‌نام می‌کنند</p>
+                    </div>
+                    <div class="step-item">
+                        <div class="step-number">۳</div>
+                        <p>پس از اولین نوبت، هر دو جایزه می‌گیرید!</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3>🎁 جوایز معرفی</h3>
+            <div class="reward-card">
+                <span>🎉 شما (معرف)</span>
+                <span><strong>۵۰,۰۰۰ تومان</strong> تخفیف در اولین نوبت دوستتان</span>
+            </div>
+            <div class="reward-card">
+                <span>🎉 دوست شما (معرفی شده)</span>
+                <span><strong>۳۰,۰۰۰ تومان</strong> تخفیف در اولین نوبت</span>
+            </div>
+            <div class="reward-card">
+                <span>💎 نوبت‌های بعدی</span>
+                <span><strong>۱۰٪ تخفیف</strong> از هر نوبت دوست شما</span>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>📅 نوبت‌دهی هوشمند</h4>
+                    <p>پلتفرم پیشرو در ارائه خدمات رزرو آنلاین</p>
+                </div>
+                <div class="footer-col">
+                    <h4>دسترسی سریع</h4>
+                    <ul>
+                        <li><a href="../../index.html">خانه</a></li>
+                        <li><a href="dashboard.html">پنل کاربری</a></li>
+                        <li><a href="referral.html">معرفی دوستان</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; ۱۴۰۴ تمامی حقوق محفوظ است.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // بررسی لاگین
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const user = JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user') || 'null');
+        
+        if (!token || !user) {
+            window.location.href = '../auth/login.html';
+        }
+        
+        // تولید کد معرفی
+        let referralCode = localStorage.getItem(`referral_code_${user.id}`);
+        if (!referralCode) {
+            referralCode = user.name.replace(/\s/g, '').substring(0, 4).toUpperCase() + Math.floor(Math.random() * 10000);
+            localStorage.setItem(`referral_code_${user.id}`, referralCode);
+        }
+        
+        let stats = {
+            totalReferrals: 3,
+            successfulReferrals: 2,
+            earnedRewards: 100000
+        };
+        
+        document.getElementById('referralCode').textContent = referralCode;
+        document.getElementById('totalReferrals').textContent = stats.totalReferrals;
+        document.getElementById('successfulReferrals').textContent = stats.successfulReferrals;
+        document.getElementById('earnedRewards').textContent = stats.earnedRewards.toLocaleString('fa-IR') + ' تومان';
+        
+        const referralLink = `${window.location.origin}/pages/auth/register.html?ref=${referralCode}`;
+        
+        document.getElementById('copyCodeBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(referralCode);
+            alert('کد معرفی کپی شد');
+        });
+        
+        document.getElementById('shareBtn').addEventListener('click', () => {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'دعوت به پلتفرم نوبت‌دهی',
+                    text: `با استفاده از کد ${referralCode} ثبت‌نام کنید و از تخفیف ویژه بهره‌مند شوید!`,
+                    url: referralLink
+                });
+            } else {
+                navigator.clipboard.writeText(referralLink);
+                alert('لینک معرفی کپی شد');
+            }
+        });
+        
+        // خروج
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '../../index.html';
+        });
+        
+        // منو موبایل
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const mainNav = document.getElementById('mainNav');
+        mobileToggle?.addEventListener('click', () => mainNav.classList.toggle('active'));
+        
+        // تم تاریک/روشن
+        const themeToggle = document.getElementById('themeToggle');
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+            themeToggle.textContent = '☀️';
+        }
+        themeToggle?.addEventListener('click', () => {
+            const html = document.documentElement;
+            if (html.classList.contains('dark-theme')) {
+                html.classList.remove('dark-theme');
+                localStorage.setItem('theme', 'light');
+                themeToggle.textContent = '🌙';
+            } else {
+                html.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+                themeToggle.textContent = '☀️';
+            }
+        });
+    </script>
+</body>
+</html>

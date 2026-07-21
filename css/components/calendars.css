@@ -1,0 +1,194 @@
+ /* ============================================
+   CALENDARS.CSS - استایل تقویم
+   ============================================ */
+
+/* ===== تقویم پایه ===== */
+.calendar {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    width: 100%;
+}
+
+/* ===== هدر تقویم ===== */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-4);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.calendar-nav-btn {
+    background: none;
+    border: none;
+    font-size: var(--font-xl);
+    cursor: pointer;
+    padding: var(--spacing-2);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.calendar-nav-btn:hover {
+    background: var(--bg-tertiary);
+}
+
+.calendar-month-year {
+    font-weight: var(--font-bold);
+    font-size: var(--font-base);
+}
+
+/* ===== روزهای هفته ===== */
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    padding: var(--spacing-2);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.calendar-weekday {
+    font-size: var(--font-sm);
+    font-weight: var(--font-medium);
+    color: var(--text-tertiary);
+    padding: var(--spacing-2);
+}
+
+/* ===== روزهای ماه ===== */
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    padding: var(--spacing-2);
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-sm);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.calendar-day:hover:not(.disabled):not(.other-month) {
+    background: var(--color-primary-soft);
+}
+
+/* ===== وضعیت‌های روز ===== */
+.calendar-day.today {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    font-weight: var(--font-bold);
+}
+
+.calendar-day.selected {
+    background: var(--color-primary);
+    color: white;
+}
+
+.calendar-day.other-month {
+    color: var(--text-tertiary);
+    opacity: 0.5;
+}
+
+.calendar-day.disabled {
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.calendar-day.highlighted {
+    background: var(--color-success-soft);
+    color: var(--color-success);
+}
+
+.calendar-day.has-event {
+    position: relative;
+}
+
+.calendar-day.has-event::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 4px;
+    height: 4px;
+    background: var(--color-primary);
+    border-radius: 50%;
+}
+
+/* ===== تقویم کوچک ===== */
+.calendar-small {
+    max-width: 300px;
+}
+
+.calendar-small .calendar-day {
+    font-size: var(--font-xs);
+}
+
+/* ===== تقویم بزرگ ===== */
+.calendar-large {
+    max-width: 800px;
+}
+
+.calendar-large .calendar-day {
+    font-size: var(--font-base);
+    min-height: 80px;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: var(--spacing-2);
+}
+
+.calendar-large .calendar-day.has-event::after {
+    display: none;
+}
+
+.calendar-event {
+    font-size: var(--font-xs);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    padding: 2px 4px;
+    border-radius: var(--radius-sm);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* ===== انتخابگر محدوده ===== */
+.calendar-range .calendar-day.range-start {
+    background: var(--color-primary);
+    color: white;
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.calendar-range .calendar-day.range-end {
+    background: var(--color-primary);
+    color: white;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.calendar-range .calendar-day.in-range {
+    background: var(--color-primary-soft);
+    border-radius: 0;
+}
+
+/* ===== ریسپانسیو ===== */
+@media (max-width: 768px) {
+    .calendar-large .calendar-day {
+        min-height: 60px;
+        font-size: var(--font-sm);
+    }
+    
+    .calendar-event {
+        font-size: var(--font-xs);
+        white-space: normal;
+    }
+}

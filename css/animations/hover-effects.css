@@ -1,0 +1,190 @@
+ /* ============================================
+   HOVER-EFFECTS.CSS - افکت‌های هاور
+   ============================================ */
+
+/* ===== بزرگ شدن ===== */
+.hover-scale {
+    transition: transform var(--transition-fast);
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.hover-scale-lg:hover {
+    transform: scale(1.1);
+}
+
+.hover-scale-sm:hover {
+    transform: scale(1.02);
+}
+
+/* ===== بالا آمدن ===== */
+.hover-lift {
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.hover-lift-lg:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl);
+}
+
+/* ===== تغییر رنگ ===== */
+.hover-color {
+    transition: color var(--transition-fast);
+}
+
+.hover-color:hover {
+    color: var(--color-primary);
+}
+
+.hover-bg {
+    transition: background-color var(--transition-fast);
+}
+
+.hover-bg:hover {
+    background-color: var(--bg-secondary);
+}
+
+.hover-bg-primary:hover {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+/* ===== حاشیه ===== */
+.hover-border {
+    transition: border-color var(--transition-fast);
+}
+
+.hover-border:hover {
+    border-color: var(--color-primary);
+}
+
+/* ===== سایه ===== */
+.hover-shadow {
+    transition: box-shadow var(--transition-fast);
+}
+
+.hover-shadow:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.hover-shadow-lg:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+/* ===== چرخش ===== */
+.hover-rotate {
+    transition: transform var(--transition-fast);
+}
+
+.hover-rotate:hover {
+    transform: rotate(5deg);
+}
+
+.hover-rotate-lg:hover {
+    transform: rotate(10deg);
+}
+
+/* ===== حرکت ===== */
+.hover-slide-right:hover {
+    transform: translateX(5px);
+}
+
+.hover-slide-left:hover {
+    transform: translateX(-5px);
+}
+
+/* ===== محو شدن ===== */
+.hover-fade {
+    transition: opacity var(--transition-fast);
+}
+
+.hover-fade:hover {
+    opacity: 0.8;
+}
+
+/* ===== روشن شدن ===== */
+.hover-brightness {
+    transition: filter var(--transition-fast);
+}
+
+.hover-brightness:hover {
+    filter: brightness(1.1);
+}
+
+/* ===== تاریک شدن ===== */
+.hover-darken:hover {
+    filter: brightness(0.9);
+}
+
+/* ===== بلور ===== */
+.hover-blur {
+    transition: filter var(--transition-fast);
+}
+
+.hover-blur:hover {
+    filter: blur(2px);
+}
+
+/* ===== خط زیرین ===== */
+.hover-underline {
+    position: relative;
+}
+
+.hover-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--color-primary);
+    transition: width var(--transition-fast);
+}
+
+.hover-underline:hover::after {
+    width: 100%;
+}
+
+/* ===== حاشیه دور ===== */
+.hover-outline {
+    transition: box-shadow var(--transition-fast);
+}
+
+.hover-outline:hover {
+    box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+/* ===== برجسته شدن ===== */
+.hover-glow {
+    transition: box-shadow var(--transition-fast);
+}
+
+.hover-glow:hover {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+/* ===== افکت شیشه‌ای ===== */
+.hover-glass {
+    transition: background-color var(--transition-fast), backdrop-filter var(--transition-fast);
+}
+
+.hover-glass:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+/* ===== چرخش ۳۶۰ ===== */
+.hover-spin {
+    transition: transform 0.5s ease;
+}
+
+.hover-spin:hover {
+    transform: rotate(360deg);
+}

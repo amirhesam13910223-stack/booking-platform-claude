@@ -1,0 +1,126 @@
+ /* ============================================
+   FOOTER STYLES - استایل فوتر اصلی
+   ============================================ */
+
+.main-footer {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: var(--spacing-12) 0 var(--spacing-6);
+    margin-top: var(--spacing-16);
+}
+
+/* گرید فوتر */
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-8);
+    margin-bottom: var(--spacing-8);
+}
+
+/* ستون‌های فوتر */
+.footer-col h4 {
+    margin-bottom: var(--spacing-4);
+    color: var(--text-primary);
+    font-size: var(--font-lg);
+    font-weight: var(--font-bold);
+}
+
+.footer-col p {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-4);
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-col ul li {
+    margin-bottom: var(--spacing-2);
+}
+
+.footer-col ul li a {
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+    transition: color var(--transition-fast);
+}
+
+.footer-col ul li a:hover {
+    color: var(--color-primary);
+    padding-right: var(--spacing-1);
+}
+
+/* اطلاعات تماس */
+.contact-info li {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--text-secondary);
+    font-size: var(--font-sm);
+}
+
+/* لینک‌های شبکه‌های اجتماعی */
+.social-links {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-4);
+}
+
+.social-link {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+    font-size: var(--font-lg);
+}
+
+.social-link:hover {
+    background-color: var(--color-primary);
+    transform: translateY(-3px);
+}
+
+.social-link:hover {
+    color: white;
+}
+
+/*底部 فوتر */
+.footer-bottom {
+    text-align: center;
+    padding-top: var(--spacing-6);
+    border-top: 1px solid var(--border-color);
+    color: var(--text-tertiary);
+    font-size: var(--font-sm);
+}
+
+/* ===== Responsive Footer ===== */
+@media (max-width: 768px) {
+    .main-footer {
+        padding: var(--spacing-8) 0 var(--spacing-4);
+        margin-top: var(--spacing-8);
+    }
+    
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-6);
+        text-align: center;
+    }
+    
+    .footer-col h4 {
+        margin-bottom: var(--spacing-3);
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    .contact-info li {
+        justify-content: center;
+    }
+}

@@ -1,0 +1,58 @@
+ <!-- ============================================
+   HEADER.HTML - هدر مشترک تمام صفحات
+   ============================================ -->
+<header class="main-header">
+    <div class="container">
+        <div class="header-wrapper">
+            <!-- لوگو -->
+            <div class="logo">
+                <a href="/">
+                    <span class="logo-text">📅 نوبت‌دهی هوشمند</span>
+                </a>
+            </div>
+            
+            <!-- دکمه منو موبایل -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="منو">
+                <span></span><span></span><span></span>
+            </button>
+            
+            <!-- ناوبری اصلی -->
+            <nav class="main-nav" id="mainNav">
+                <ul class="nav-list">
+                    <li><a href="/" class="nav-link" data-page="home">خانه</a></li>
+                    <li><a href="/pages/public/booking.html" class="nav-link" data-page="booking">رزرو نوبت</a></li>
+                    <li><a href="/pages/public/reverse-market.html" class="nav-link nav-link-special" data-page="reverse-market">🔥 بازار معکوس</a></li>
+                    <li><a href="/pages/public/plans.html" class="nav-link" data-page="plans">طرح‌های اشتراکی</a></li>
+                    <li><a href="/pages/business/dashboard.html" class="nav-link" data-page="business">پنل کسب‌وکار</a></li>
+                    <li><a href="/pages/public/contact.html" class="nav-link" data-page="contact">تماس با ما</a></li>
+                </ul>
+            </nav>
+            
+            <!-- دکمه‌های سمت راست -->
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="تغییر تم">🌙</button>
+                <button class="btn btn-outline" id="loginBtn">ورود</button>
+                <button class="btn btn-primary" id="registerBtn">ثبت‌نام</button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<script>
+    // فعال‌سازی لینک فعال در منو
+    (function() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href && (currentPath === href || (currentPath === '/' && href === '/'))) {
+                link.classList.add('active');
+            } else if (href && currentPath.includes(href.replace('/', '')) && href !== '/') {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    })();
+</script>

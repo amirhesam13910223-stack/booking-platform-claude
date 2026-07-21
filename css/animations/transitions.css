@@ -1,0 +1,160 @@
+ /* ============================================
+   TRANSITIONS.CSS - انیمیشن‌های انتقال
+   ============================================ */
+
+/* ===== انتقال‌های پایه ===== */
+.transition-all {
+    transition: all var(--transition-normal);
+}
+
+.transition-fast {
+    transition: all var(--transition-fast);
+}
+
+.transition-slow {
+    transition: all var(--transition-slow);
+}
+
+/* ===== محو شدن ===== */
+.fade-enter {
+    opacity: 0;
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transition: opacity var(--transition-normal);
+}
+
+.fade-exit {
+    opacity: 1;
+}
+
+.fade-exit-active {
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+/* ===== اسلاید از راست ===== */
+.slide-right-enter {
+    transform: translateX(100%);
+}
+
+.slide-right-enter-active {
+    transform: translateX(0);
+    transition: transform var(--transition-normal);
+}
+
+.slide-right-exit {
+    transform: translateX(0);
+}
+
+.slide-right-exit-active {
+    transform: translateX(100%);
+    transition: transform var(--transition-normal);
+}
+
+/* ===== اسلاید از چپ ===== */
+.slide-left-enter {
+    transform: translateX(-100%);
+}
+
+.slide-left-enter-active {
+    transform: translateX(0);
+    transition: transform var(--transition-normal);
+}
+
+.slide-left-exit {
+    transform: translateX(0);
+}
+
+.slide-left-exit-active {
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+}
+
+/* ===== اسلاید از بالا ===== */
+.slide-down-enter {
+    transform: translateY(-100%);
+}
+
+.slide-down-enter-active {
+    transform: translateY(0);
+    transition: transform var(--transition-normal);
+}
+
+.slide-down-exit {
+    transform: translateY(0);
+}
+
+.slide-down-exit-active {
+    transform: translateY(-100%);
+    transition: transform var(--transition-normal);
+}
+
+/* ===== اسلاید از پایین ===== */
+.slide-up-enter {
+    transform: translateY(100%);
+}
+
+.slide-up-enter-active {
+    transform: translateY(0);
+    transition: transform var(--transition-normal);
+}
+
+.slide-up-exit {
+    transform: translateY(0);
+}
+
+.slide-up-exit-active {
+    transform: translateY(100%);
+    transition: transform var(--transition-normal);
+}
+
+/* ===== بزرگ شدن ===== */
+.scale-enter {
+    transform: scale(0);
+    opacity: 0;
+}
+
+.scale-enter-active {
+    transform: scale(1);
+    opacity: 1;
+    transition: all var(--transition-normal);
+}
+
+.scale-exit {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.scale-exit-active {
+    transform: scale(0);
+    opacity: 0;
+    transition: all var(--transition-normal);
+}
+
+/* ===== چرخش ===== */
+.rotate-enter {
+    transform: rotate(-180deg);
+    opacity: 0;
+}
+
+.rotate-enter-active {
+    transform: rotate(0);
+    opacity: 1;
+    transition: all var(--transition-normal);
+}
+
+/* ===== تغییر رنگ ===== */
+.color-transition {
+    transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+/* ===== تغییر سایه ===== */
+.shadow-transition {
+    transition: box-shadow var(--transition-normal);
+}
+
+.shadow-transition:hover {
+    box-shadow: var(--shadow-lg);
+}

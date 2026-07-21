@@ -1,0 +1,319 @@
+ /* ============================================
+   BOOKING.CSS - استایل صفحه رزرو نوبت
+   ============================================ */
+
+/* ===== مراحل رزرو ===== */
+.booking-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-8);
+    position: relative;
+}
+
+.booking-steps::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--border-color);
+    z-index: 0;
+}
+
+.step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin: 0 auto var(--spacing-2);
+    transition: all var(--transition-fast);
+}
+
+.step.active .step-number {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.step.completed .step-number {
+    background: var(--color-success);
+    border-color: var(--color-success);
+    color: white;
+}
+
+.step-label {
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+}
+
+.step.active .step-label {
+    color: var(--color-primary);
+    font-weight: bold;
+}
+
+/* ===== انتخاب کسب‌وکار ===== */
+.business-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-4);
+    margin: var(--spacing-6) 0;
+}
+
+.business-card {
+    display: flex;
+    gap: var(--spacing-4);
+    padding: var(--spacing-4);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.business-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.business-card.selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.business-avatar {
+    width: 60px;
+    height: 60px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-2xl);
+}
+
+.business-info h4 {
+    margin-bottom: var(--spacing-1);
+}
+
+.business-info p {
+    font-size: var(--font-sm);
+    margin: 0;
+}
+
+.business-rating {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+    margin-top: var(--spacing-2);
+    font-size: var(--font-sm);
+}
+
+/* ===== انتخاب خدمت ===== */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-4);
+    margin: var(--spacing-6) 0;
+}
+
+.service-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-4);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.service-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.service-card.selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.service-info h4 {
+    margin-bottom: var(--spacing-1);
+}
+
+.service-info p {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+    margin: 0;
+}
+
+.service-price {
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+/* ===== انتخاب تاریخ و ساعت ===== */
+.calendar-container {
+    margin: var(--spacing-6) 0;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-4);
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-2);
+    text-align: center;
+    font-weight: bold;
+    color: var(--text-tertiary);
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--spacing-2);
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.calendar-day:hover:not(.disabled):not(.selected) {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.calendar-day.selected {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.calendar-day.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== ساعات ===== */
+.time-slots {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-6);
+}
+
+.time-slot {
+    padding: var(--spacing-2);
+    text-align: center;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.time-slot:hover:not(.booked) {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.time-slot.selected {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.time-slot.booked {
+    background: var(--bg-tertiary);
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+/* ===== خلاصه رزرو ===== */
+.booking-summary {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+    margin: var(--spacing-6) 0;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-2) 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-label {
+    color: var(--text-tertiary);
+}
+
+.summary-value {
+    font-weight: var(--font-medium);
+}
+
+.summary-price {
+    color: var(--color-primary);
+    font-size: var(--font-lg);
+    font-weight: bold;
+}
+
+/* ===== دکمه‌های مرحله ===== */
+.booking-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+    margin-top: var(--spacing-8);
+}
+
+/* ===== ریسپانسیو ===== */
+@media (max-width: 768px) {
+    .booking-steps {
+        flex-direction: column;
+        gap: var(--spacing-4);
+    }
+    
+    .booking-steps::before {
+        display: none;
+    }
+    
+    .step {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-3);
+    }
+    
+    .step-number {
+        margin: 0;
+    }
+}

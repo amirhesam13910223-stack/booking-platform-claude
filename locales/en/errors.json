@@ -1,0 +1,74 @@
+{
+    "general": {
+        "unknown_error": "An unknown error occurred",
+        "network_error": "Network error",
+        "timeout_error": "Request timeout",
+        "server_error": "Server error",
+        "maintenance": "System is under maintenance, please try again later"
+    },
+    "auth": {
+        "unauthorized": "Please login to your account",
+        "forbidden": "You do not have permission to access this resource",
+        "token_expired": "Your session has expired, please login again",
+        "invalid_token": "Invalid token",
+        "login_required": "Please login to continue",
+        "account_blocked": "Your account has been blocked",
+        "invalid_credentials": "Invalid username or password",
+        "too_many_attempts": "Too many failed attempts, please try again later"
+    },
+    "validation": {
+        "required": "This field is required",
+        "email": "Invalid email address",
+        "phone": "Invalid phone number",
+        "national_code": "Invalid national code",
+        "min_length": "Minimum {length} characters required",
+        "max_length": "Maximum {length} characters allowed",
+        "min": "Value must be at least {min}",
+        "max": "Value must be at most {max}",
+        "numeric": "Value must be a number",
+        "integer": "Value must be an integer",
+        "positive": "Value must be positive",
+        "match": "Value does not match",
+        "date": "Invalid date",
+        "time": "Invalid time",
+        "url": "Invalid URL"
+    },
+    "booking": {
+        "not_found": "Booking not found",
+        "already_cancelled": "This booking has already been cancelled",
+        "already_completed": "This booking has already been completed",
+        "cannot_cancel": "Cannot cancel (time has passed or less than 2 hours remaining)",
+        "cannot_reschedule": "Cannot reschedule",
+        "time_not_available": "Selected time is not available",
+        "date_invalid": "Selected date is invalid",
+        "past_date": "Selected date is in the past",
+        "advance_too_far": "Maximum {days} days advance booking allowed"
+    },
+    "payment": {
+        "failed": "Payment failed",
+        "insufficient_balance": "Insufficient wallet balance",
+        "invalid_amount": "Invalid amount",
+        "gateway_error": "Payment gateway error",
+        "transaction_not_found": "Transaction not found",
+        "already_verified": "This transaction has already been verified",
+        "refund_failed": "Refund failed"
+    },
+    "business": {
+        "not_found": "Business not found",
+        "not_verified": "Your business has not been verified yet",
+        "subscription_expired": "Your subscription has expired",
+        "booking_limit_reached": "Monthly booking limit reached",
+        "staff_limit_reached": "Staff limit reached",
+        "branch_limit_reached": "Branch limit reached"
+    },
+    "file": {
+        "too_large": "File size exceeds limit (max {size} MB)",
+        "invalid_type": "File type not allowed",
+        "upload_failed": "File upload failed",
+        "not_found": "File not found"
+    },
+    "rate_limit": {
+        "exceeded": "Too many requests, please try again in {seconds} seconds",
+        "blocked": "Your IP has been blocked due to excessive requests"
+    }
+}

@@ -1,0 +1,86 @@
+/* ============================================
+   DESKTOP - 1025px به بالا
+   ============================================ */
+
+   @media (min-width: 1025px) {
+    /* container */
+    .container {
+        padding: 0 var(--spacing-4);
+    }
+    
+    /* ویژگی‌ها */
+    .features-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-6);
+    }
+    
+    /* طرح‌ها */
+    .plans-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-6);
+    }
+    
+    /* آمار */
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-6);
+    }
+    
+    /* hero */
+    .hero-title {
+        font-size: var(--font-5xl);
+    }
+    
+    /* دکمه منو موبایل مخفی */
+    .mobile-menu-toggle {
+        display: none;
+    }
+    
+    /* ناوبری دسکتاپ */
+    .main-nav {
+        display: flex !important;
+    }
+    
+    /* افکت‌ها */
+    .feature-card:hover,
+    .plan-card:hover,
+    .stat-card:hover {
+        transform: translateY(-8px);
+    }
+    
+    /* انیمیشن‌ها */
+    .hero-content {
+        animation: fadeInUp 0.6s ease;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* اسکرول نرم */
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+/* ===== صفحه‌های بزرگتر ===== */
+@media (min-width: 1440px) {
+    .container {
+        max-width: var(--container-2xl);
+    }
+    
+    .hero-title {
+        font-size: var(--font-6xl);
+    }
+    
+    .features-grid {
+        gap: var(--spacing-8);
+    }
+}

@@ -1,0 +1,169 @@
+ /* ============================================
+   ALERTS.CSS - استایل هشدارها
+   ============================================ */
+
+/* ===== هشدارهای پایه ===== */
+.alert {
+    position: relative;
+    padding: var(--spacing-4) var(--spacing-6);
+    margin-bottom: var(--spacing-4);
+    border-radius: var(--radius-md);
+    border-right: 4px solid;
+    font-size: var(--font-sm);
+    line-height: 1.5;
+    animation: alertFadeIn var(--transition-normal);
+}
+
+@keyframes alertFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== انواع هشدار ===== */
+.alert-success {
+    background-color: var(--color-success-soft);
+    border-right-color: var(--color-success);
+    color: var(--color-success-dark);
+}
+
+.alert-error {
+    background-color: var(--color-danger-soft);
+    border-right-color: var(--color-danger);
+    color: var(--color-danger-dark);
+}
+
+.alert-warning {
+    background-color: var(--color-warning-soft);
+    border-right-color: var(--color-warning);
+    color: var(--color-warning-dark);
+}
+
+.alert-info {
+    background-color: var(--color-info-soft);
+    border-right-color: var(--color-info);
+    color: var(--color-info-dark);
+}
+
+/* ===== آیکون هشدار ===== */
+.alert-icon {
+    position: absolute;
+    right: var(--spacing-4);
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: var(--font-xl);
+}
+
+.alert-with-icon {
+    padding-right: var(--spacing-12);
+}
+
+/* ===== دکمه بستن ===== */
+.alert-close {
+    position: absolute;
+    left: var(--spacing-4);
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: var(--font-xl);
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity var(--transition-fast);
+}
+
+.alert-close:hover {
+    opacity: 1;
+}
+
+/* ===== هشدار قابل جمع شدن ===== */
+.alert-collapsible {
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.alert-collapsible:hover {
+    filter: brightness(0.98);
+}
+
+.alert-content {
+    display: none;
+    margin-top: var(--spacing-3);
+    padding-top: var(--spacing-3);
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+.alert-content.show {
+    display: block;
+}
+
+/* ===== هشدار با عنوان ===== */
+.alert-title {
+    font-weight: var(--font-bold);
+    margin-bottom: var(--spacing-2);
+}
+
+/* ===== لیست در هشدار ===== */
+.alert-list {
+    margin: var(--spacing-2) 0 0 var(--spacing-4);
+    padding-right: var(--spacing-4);
+}
+
+.alert-list li {
+    margin-bottom: var(--spacing-1);
+}
+
+/* ===== هشدار متحرک ===== */
+.alert-slide-out {
+    animation: alertSlideOut 0.3s ease forwards;
+}
+
+@keyframes alertSlideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* ===== هشدار درون خطی ===== */
+.alert-inline {
+    display: inline-block;
+    padding: var(--spacing-1) var(--spacing-3);
+    margin-bottom: 0;
+    font-size: var(--font-xs);
+}
+
+/* ===== هشدار ساده ===== */
+.alert-simple {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* ===== ریسپانسیو ===== */
+@media (max-width: 640px) {
+    .alert {
+        padding: var(--spacing-3) var(--spacing-4);
+        font-size: var(--font-xs);
+    }
+    
+    .alert-with-icon {
+        padding-right: var(--spacing-8);
+    }
+    
+    .alert-icon {
+        font-size: var(--font-lg);
+        right: var(--spacing-3);
+    }
+}

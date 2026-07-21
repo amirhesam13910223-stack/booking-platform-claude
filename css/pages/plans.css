@@ -1,0 +1,190 @@
+ /* ============================================
+   PLANS.CSS - استایل صفحه طرح‌ها
+   ============================================ */
+
+/* ===== هدر طرح‌ها ===== */
+.plans-header {
+    text-align: center;
+    margin-bottom: var(--spacing-8);
+}
+
+.plans-toggle {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-2);
+    background: var(--bg-secondary);
+    padding: var(--spacing-1);
+    border-radius: var(--radius-full);
+    width: fit-content;
+    margin: var(--spacing-4) auto 0;
+}
+
+.toggle-option {
+    padding: var(--spacing-2) var(--spacing-6);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.toggle-option.active {
+    background: var(--color-primary);
+    color: white;
+}
+
+/* ===== لیست طرح‌ها ===== */
+.plans-container {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-6);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-12);
+}
+
+.plan-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+    width: 320px;
+    position: relative;
+    transition: all var(--transition-fast);
+}
+
+.plan-box:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.plan-box.popular {
+    border: 2px solid var(--color-primary);
+    transform: scale(1.02);
+}
+
+.popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-primary);
+    color: white;
+    padding: var(--spacing-1) var(--spacing-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-xs);
+    white-space: nowrap;
+}
+
+.plan-name {
+    font-size: var(--font-2xl);
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: var(--spacing-4);
+}
+
+.plan-price {
+    text-align: center;
+    margin-bottom: var(--spacing-4);
+}
+
+.price-amount {
+    font-size: 48px;
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+.price-period {
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+}
+
+.plan-features-list {
+    list-style: none;
+    margin: var(--spacing-6) 0;
+}
+
+.plan-features-list li {
+    padding: var(--spacing-2) 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.feature-check {
+    color: var(--color-success);
+}
+
+.plan-button {
+    width: 100%;
+    margin-top: var(--spacing-4);
+}
+
+/* ===== مقایسه طرح‌ها ===== */
+.comparison-table {
+    overflow-x: auto;
+    margin-top: var(--spacing-12);
+}
+
+.comparison-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: var(--spacing-3);
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.comparison-table th {
+    background: var(--bg-secondary);
+    font-weight: bold;
+}
+
+.comparison-table td:first-child {
+    font-weight: bold;
+    background: var(--bg-secondary);
+}
+
+/* ===== FAQ ===== */
+.faq-section {
+    margin-top: var(--spacing-12);
+}
+
+.faq-item {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.faq-question {
+    padding: var(--spacing-4);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+}
+
+.faq-question:hover {
+    background: var(--bg-secondary);
+}
+
+.faq-answer {
+    padding: 0 var(--spacing-4) var(--spacing-4);
+    display: none;
+}
+
+.faq-answer.active {
+    display: block;
+}
+
+/* ===== ریسپانسیو ===== */
+@media (max-width: 768px) {
+    .plan-box {
+        width: 100%;
+        max-width: 350px;
+    }
+    
+    .plan-box.popular {
+        transform: scale(1);
+    }
+}

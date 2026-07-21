@@ -1,0 +1,117 @@
+ /* ============================================
+   PAYMENTS.CSS - استایل صفحه پرداخت
+   ============================================ */
+
+/* ===== روش‌های پرداخت ===== */
+.payment-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-8);
+}
+
+.payment-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-4);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.payment-card:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.payment-card.selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.payment-icon {
+    font-size: 48px;
+    margin-bottom: var(--spacing-2);
+}
+
+.payment-name {
+    font-weight: bold;
+}
+
+/* ===== فرم پرداخت ===== */
+.payment-form {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.payment-amount {
+    text-align: center;
+    margin-bottom: var(--spacing-6);
+}
+
+.amount-value {
+    font-size: 48px;
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+/* ===== وضعیت پرداخت ===== */
+.payment-status {
+    text-align: center;
+    padding: var(--spacing-8);
+}
+
+.status-icon {
+    font-size: 64px;
+    margin-bottom: var(--spacing-4);
+}
+
+.status-icon.success {
+    color: var(--color-success);
+}
+
+.status-icon.error {
+    color: var(--color-danger);
+}
+
+.status-icon.pending {
+    color: var(--color-warning);
+}
+
+/* ===== تاریخچه تراکنش‌ها ===== */
+.transactions-list {
+    margin-top: var(--spacing-6);
+}
+
+.transaction-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-3);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.transaction-id {
+    font-family: monospace;
+    font-size: var(--font-sm);
+}
+
+.transaction-amount {
+    font-weight: bold;
+}
+
+.transaction-status {
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-full);
+    font-size: var(--font-xs);
+}
+
+.transaction-status.success {
+    background: var(--color-success-soft);
+    color: var(--color-success);
+}

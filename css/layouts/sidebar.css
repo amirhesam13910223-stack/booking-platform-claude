@@ -1,0 +1,195 @@
+ /* ============================================
+   SIDEBAR.CSS - استایل سایدبار
+   ============================================ */
+
+/* ===== سایدبار پایه ===== */
+.sidebar {
+    width: 280px;
+    background: var(--card-bg);
+    border-left: 1px solid var(--border-color);
+    height: 100%;
+    transition: all var(--transition-normal);
+    position: sticky;
+    top: 70px;
+}
+
+/* ===== سایدبار جمع شده ===== */
+.sidebar-collapsed {
+    width: 80px;
+}
+
+.sidebar-collapsed .sidebar-item span:not(.sidebar-icon) {
+    display: none;
+}
+
+.sidebar-collapsed .sidebar-header .user-details {
+    display: none;
+}
+
+/* ===== هدر سایدبار ===== */
+.sidebar-header {
+    padding: var(--spacing-5);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-xl);
+    color: white;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: var(--font-bold);
+    margin-bottom: var(--spacing-1);
+}
+
+.user-role {
+    font-size: var(--font-xs);
+    color: var(--text-tertiary);
+}
+
+/* ===== منوی سایدبار ===== */
+.sidebar-nav {
+    padding: var(--spacing-4) 0;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-item {
+    margin-bottom: var(--spacing-1);
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3) var(--spacing-5);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+    border-radius: var(--radius-md);
+    margin: 0 var(--spacing-3);
+}
+
+.sidebar-link:hover {
+    background: var(--bg-secondary);
+    color: var(--color-primary);
+}
+
+.sidebar-link.active {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.sidebar-icon {
+    font-size: var(--font-xl);
+    min-width: 24px;
+    text-align: center;
+}
+
+.sidebar-text {
+    font-size: var(--font-sm);
+}
+
+/* ===== زیرمنو ===== */
+.sidebar-submenu {
+    list-style: none;
+    padding-right: var(--spacing-8);
+    margin: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-normal);
+}
+
+.sidebar-item.has-submenu.open .sidebar-submenu {
+    max-height: 500px;
+}
+
+.sidebar-submenu .sidebar-link {
+    padding: var(--spacing-2) var(--spacing-5);
+    font-size: var(--font-sm);
+}
+
+.sidebar-toggle {
+    position: absolute;
+    left: -12px;
+    top: 20px;
+    width: 24px;
+    height: 24px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-xs);
+    transition: transform var(--transition-fast);
+}
+
+.sidebar-collapsed .sidebar-toggle {
+    transform: rotate(180deg);
+}
+
+/* ===== فوتر سایدبار ===== */
+.sidebar-footer {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+}
+
+/* ===== سایدبار موبایل ===== */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        right: -280px;
+        bottom: 0;
+        z-index: var(--z-fixed);
+        height: 100vh;
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .sidebar.open {
+        right: 0;
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: calc(var(--z-fixed) - 1);
+        display: none;
+    }
+    
+    .sidebar-overlay.open {
+        display: block;
+    }
+    
+    .sidebar-toggle {
+        display: none;
+    }
+}

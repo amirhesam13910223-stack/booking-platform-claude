@@ -1,0 +1,145 @@
+ /* ============================================
+   REVERSE-MARKET.CSS - استایل صفحه بازار معکوس
+   ============================================ */
+
+/* ===== هدر بازار معکوس ===== */
+.market-header {
+    text-align: center;
+    margin-bottom: var(--spacing-8);
+}
+
+.market-title {
+    font-size: var(--font-4xl);
+    margin-bottom: var(--spacing-3);
+}
+
+.market-description {
+    color: var(--text-tertiary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ===== ایجاد درخواست ===== */
+.create-request-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+    margin-bottom: var(--spacing-8);
+}
+
+.request-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-4);
+}
+
+/* ===== درخواست‌های فعال ===== */
+.requests-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--spacing-6);
+}
+
+.request-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-5);
+    transition: all var(--transition-fast);
+}
+
+.request-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-3);
+    padding-bottom: var(--spacing-2);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.request-user {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.request-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--color-primary-soft);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+.request-service {
+    font-weight: bold;
+    margin-bottom: var(--spacing-2);
+}
+
+.request-details {
+    margin: var(--spacing-3) 0;
+    font-size: var(--font-sm);
+    color: var(--text-tertiary);
+}
+
+.request-budget {
+    font-size: var(--font-lg);
+    font-weight: bold;
+    color: var(--color-primary);
+    margin: var(--spacing-2) 0;
+}
+
+.request-timer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-3);
+    padding-top: var(--spacing-2);
+    border-top: 1px solid var(--border-color);
+    color: var(--color-danger);
+}
+
+/* ===== پیشنهادات ===== */
+.bids-container {
+    margin-top: var(--spacing-3);
+}
+
+.bid-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-2);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-2);
+}
+
+.bid-business {
+    font-weight: 500;
+}
+
+.bid-price {
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+/* ===== ریسپانسیو ===== */
+@media (max-width: 768px) {
+    .requests-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .request-form {
+        grid-template-columns: 1fr;
+    }
+}
