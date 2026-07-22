@@ -8,16 +8,20 @@
 احراز هویت با هدر `Authorization: Bearer <access_token>`.
 
 ## Auth
+
+**نکته‌ی پیاده‌سازی**: `refreshToken` در یک httpOnly cookie (`refresh_token`، محدود به مسیر `/api/v1/auth`) ست میشه — کلاینت وب هیچ‌وقت مستقیم بهش دسترسی نداره. کلاینت‌های بدون کوکی (مثلاً اپ موبایل در فازهای بعدی) می‌تونن جایگزین در بدنه‌ی درخواست `refresh`/`logout` بفرستن. `accessToken` در پاسخ JSON برمی‌گرده و کلاینت در حافظه (نه localStorage) نگهش می‌داره.
+
 | Method | Path | توضیح | دسترسی |
 |---|---|---|---|
 | POST | /auth/register/request-otp | ارسال OTP برای ثبت‌نام | عمومی |
-| POST | /auth/register/verify | تایید OTP + تکمیل پروفایل | عمومی |
+| POST | /auth/register/verify | تایید OTP + ساخت حساب + صدور توکن | عمومی |
 | POST | /auth/login | ورود با شماره+رمز | عمومی |
-| POST | /auth/login/otp | ورود با OTP | عمومی |
-| POST | /auth/refresh | گرفتن access token جدید | عمومی (با refresh token معتبر) |
-| POST | /auth/logout | ابطال refresh token فعلی | کاربر لاگین‌شده |
+| POST | /auth/login/otp/request | درخواست OTP برای ورود | عمومی |
+| POST | /auth/login/otp/verify | تایید OTP و ورود | عمومی |
+| POST | /auth/refresh | گرفتن access token جدید (rotation) | عمومی (با refresh token معتبر) |
+| POST | /auth/logout | ابطال refresh token فعلی | عمومی (idempotent) |
 | POST | /auth/forgot-password | شروع بازیابی رمز | عمومی |
-| POST | /auth/reset-password | تنظیم رمز جدید با کد | عمومی |
+| POST | /auth/reset-password | تنظیم رمز جدید با کد (تمام نشست‌ها باطل میشن) | عمومی |
 | GET | /auth/me | اطلاعات کاربر لاگین‌شده | کاربر لاگین‌شده |
 
 ## Users
