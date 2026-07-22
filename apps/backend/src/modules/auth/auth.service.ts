@@ -40,12 +40,12 @@ export class AuthService {
   // ثبت‌نام
   // ---------------------------------------------------------
 
-  async requestRegisterOtp(phone: string): Promise<void> {
+  async requestRegisterOtp(phone: string): Promise<{ debugCode?: string }> {
     const existing = await this.prisma.user.findUnique({ where: { phone } });
     if (existing) {
       throw new ConflictException('این شماره قبلاً ثبت‌نام کرده است');
     }
-    await this.otp.requestOtp(phone, 'REGISTER');
+    return this.otp.requestOtp(phone, 'REGISTER');
   }
 
   async verifyRegisterAndCreateUser(
@@ -102,13 +102,13 @@ export class AuthService {
     return this.issueTokenPair(user.id, user.globalRole, ctx);
   }
 
-  async requestLoginOtp(phone: string): Promise<void> {
+  async requestLoginOtp(phone: string): Promise<{ debugCode?: string }> {
     const user = await this.prisma.user.findUnique({ where: { phone } });
     if (!user || user.status !== 'ACTIVE') {
       // پیام رو یکسان نگه می‌داریم که مشخص نشه شماره ثبت‌نام شده یا نه
-      return;
+      return {};
     }
-    await this.otp.requestOtp(phone, 'LOGIN', user.id);
+    return this.otp.requestOtp(phone, 'LOGIN', user.id);
   }
 
   async verifyLoginOtp(dto: VerifyLoginOtpDto, ctx: DeviceContext): Promise<TokenPair> {
@@ -129,12 +129,12 @@ export class AuthService {
   // بازیابی رمز عبور
   // ---------------------------------------------------------
 
-  async forgotPassword(phone: string): Promise<void> {
+  async forgotPassword(phone: string): Promise<{ debugCode?: string }> {
     const user = await this.prisma.user.findUnique({ where: { phone } });
     if (!user) {
-      return; // همون منطق ضد enumeration
+      return {}; // همون منطق ضد enumeration
     }
-    await this.otp.requestOtp(phone, 'RESET_PASSWORD', user.id);
+    return this.otp.requestOtp(phone, 'RESET_PASSWORD', user.id);
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<void> {

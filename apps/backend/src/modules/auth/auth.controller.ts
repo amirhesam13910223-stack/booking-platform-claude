@@ -42,8 +42,8 @@ export class AuthController {
   @Post('register/request-otp')
   @HttpCode(HttpStatus.OK)
   async requestRegisterOtp(@Body() dto: RequestOtpDto) {
-    await this.authService.requestRegisterOtp(dto.phone);
-    return { message: 'کد تایید ارسال شد' };
+    const result = await this.authService.requestRegisterOtp(dto.phone);
+    return { message: 'کد تایید ارسال شد', ...result };
   }
 
   @Public()
@@ -79,9 +79,9 @@ export class AuthController {
   @Post('login/otp/request')
   @HttpCode(HttpStatus.OK)
   async requestLoginOtp(@Body() dto: RequestLoginOtpDto) {
-    await this.authService.requestLoginOtp(dto.phone);
+    const result = await this.authService.requestLoginOtp(dto.phone);
     // پاسخ همیشه یکسانه، صرف‌نظر از این‌که شماره ثبت‌نام شده یا نه
-    return { message: 'در صورت معتبر بودن شماره، کد تایید ارسال شد' };
+    return { message: 'در صورت معتبر بودن شماره، کد تایید ارسال شد', ...result };
   }
 
   @Public()
@@ -137,8 +137,8 @@ export class AuthController {
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
-    await this.authService.forgotPassword(dto.phone);
-    return { message: 'در صورت معتبر بودن شماره، کد تایید ارسال شد' };
+    const result = await this.authService.forgotPassword(dto.phone);
+    return { message: 'در صورت معتبر بودن شماره، کد تایید ارسال شد', ...result };
   }
 
   @Public()

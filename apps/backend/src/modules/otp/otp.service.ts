@@ -1,4 +1,5 @@
 import { Inject, Injectable, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { randomInt } from 'crypto';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { SMS_PROVIDER, SmsProvider } from '../../common/sms/sms.interface';
@@ -19,9 +20,30 @@ export class OtpService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(SMS_PROVIDER) private readonly sms: SmsProvider,
+    private readonly config: ConfigService,
   ) {}
 
-  async requestOtp(phone: string, purpose: OtpPurpose, userId?: string): Promise<void> {
+  /**
+   * تا وقتی provider پیامک واقعی وصل نشده، به‌جای اعتماد به پیامک،
+   * می‌تونیم کد رو مستقیم در پاسخ API برگردونیم تا فرانت همون‌جا
+   * نشونش بده. این قابلیت با دو لایه محافظت می‌شه:
+   *  ۱. فقط وقتی OTP_DEBUG_EXPOSE=true باشه فعاله (پیش‌فرض خاموش).
+   *  ۲. صرف‌نظر از مقدار env، در NODE_ENV=production همیشه غیرفعاله —
+   *     یعنی یک تنظیم env فراموش‌شده نمی‌تونه در محیط واقعی کد رو لو بده.
+   * وقتی provider واقعی (کاوه‌نگار و...) وصل شد، این env رو false
+   * کنید یا کلاً از .env حذفش کنید.
+   */
+  private get debugExposeEnabled(): boolean {
+    const isProduction = this.config.get<string>('NODE_ENV') === 'production';
+    const flagEnabled = this.config.get<string>('OTP_DEBUG_EXPOSE') === 'true';
+    return !isProduction && flagEnabled;
+  }
+
+  async requestOtp(
+    phone: string,
+    purpose: OtpPurpose,
+    userId?: string,
+  ): Promise<{ debugCode?: string }> {
     const recent = await this.prisma.otpCode.findFirst({
       where: { phone, purpose, consumedAt: null },
       orderBy: { createdAt: 'desc' },
@@ -45,6 +67,8 @@ export class OtpService {
     });
 
     await this.sms.send(phone, `کد تایید شما: ${code} (اعتبار ${OTP_TTL_MINUTES} دقیقه)`);
+
+    return this.debugExposeEnabled ? { debugCode: code } : {};
   }
 
   /**
