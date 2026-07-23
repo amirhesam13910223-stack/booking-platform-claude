@@ -91,6 +91,39 @@ jobs:
           if [ "$STATUS" != "401" ]; then echo "expected 401, got $STATUS"; exit 1; fi
           echo "OK: unauthenticated request correctly rejected with 401"
 
+          echo "--- create business (validates BusinessRoleGuard + transaction) ---"
+          BUSINESS_RESPONSE=$(curl -s -X POST http://localhost:3001/api/v1/businesses \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -d '{"name":"آرایشگاه تست","category":"beauty"}')
+          echo "$BUSINESS_RESPONSE"
+          BUSINESS_ID=$(echo "$BUSINESS_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (!j.id || j.status !== 'PENDING_REVIEW') { console.error('unexpected business response'); process.exit(1); } console.log(j.id); })")
+          echo "Business created: $BUSINESS_ID"
+
+          echo "--- owner can view their own business via BusinessRoleGuard ---"
+          OWNER_VIEW_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/api/v1/businesses/$BUSINESS_ID -H "Authorization: Bearer $ACCESS_TOKEN")
+          if [ "$OWNER_VIEW_STATUS" != "200" ]; then echo "expected 200, got $OWNER_VIEW_STATUS"; exit 1; fi
+          echo "OK: owner can view their PENDING_REVIEW business"
+
+          echo "--- unapproved business must NOT be publicly visible ---"
+          PUBLIC_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/api/v1/discover/businesses/$BUSINESS_ID)
+          if [ "$PUBLIC_STATUS" != "404" ]; then echo "expected 404 for unapproved business, got $PUBLIC_STATUS"; exit 1; fi
+          echo "OK: PENDING_REVIEW business correctly hidden from public discovery"
+
+          echo "--- public discovery search must NOT be swallowed by /businesses/:id (routing collision check) ---"
+          DISCOVER_SEARCH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3001/api/v1/discover/businesses")
+          if [ "$DISCOVER_SEARCH_STATUS" != "200" ]; then echo "expected 200, got $DISCOVER_SEARCH_STATUS"; exit 1; fi
+          echo "OK: public discovery search route resolves correctly"
+
+          echo "--- a random other user must NOT access this business ---"
+          OTHER_OTP=$(curl -s -X POST http://localhost:3001/api/v1/auth/register/request-otp -H "Content-Type: application/json" -d '{"phone":"09129999999"}')
+          OTHER_CODE=$(echo "$OTHER_OTP" | node -e "process.stdin.once('data', d => console.log(JSON.parse(d).debugCode))")
+          OTHER_REGISTER=$(curl -s -X POST http://localhost:3001/api/v1/auth/register/verify -H "Content-Type: application/json" -d "{\"phone\":\"09129999999\",\"code\":\"$OTHER_CODE\",\"fullName\":\"دیگری\",\"password\":\"Password1\"}")
+          OTHER_TOKEN=$(echo "$OTHER_REGISTER" | node -e "process.stdin.once('data', d => console.log(JSON.parse(d).accessToken))")
+          FORBIDDEN_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/api/v1/businesses/$BUSINESS_ID -H "Authorization: Bearer $OTHER_TOKEN")
+          if [ "$FORBIDDEN_STATUS" != "403" ]; then echo "expected 403, got $FORBIDDEN_STATUS"; exit 1; fi
+          echo "OK: non-member correctly forbidden from another user's business (BusinessRoleGuard works)"
+
           kill $SERVER_PID
         env:
           DATABASE_URL: postgresql://booking:booking_test_password@localhost:5432/booking_platform_test

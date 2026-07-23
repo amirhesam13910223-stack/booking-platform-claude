@@ -33,26 +33,57 @@
 | DELETE | /users/me | درخواست حذف حساب | خود کاربر |
 
 ## Business (ثبت و مدیریت کسب‌وکار)
+
+**نکته‌ی پیاده‌سازی**: مسیرهای مدیریتی (`/businesses/...`) نیاز به عضویت در همون کسب‌وکار دارن (`BusinessRoleGuard` + `@BusinessRoles(...)`) — این مستقل از نقش سراسری کاربره. مسیرهای عمومی/جستجو عمداً زیر یک top-level جدا (`/discover/businesses`) هستن، نه زیرمسیر `/businesses`، تا با route پارامتری `GET /businesses/:id` (که محافظت‌شده‌ست) تداخل مسیر نداشته باشن — این یک تصمیم آگاهانه‌ست، نه ناهماهنگی.
+
 | Method | Path | توضیح | دسترسی |
 |---|---|---|---|
-| POST | /businesses | ایجاد کسب‌وکار (شروع ویزارد) | کاربر لاگین‌شده |
-| PATCH | /businesses/:id | ویرایش اطلاعات پایه | مالک/منیجر |
-| POST | /businesses/:id/documents | آپلود مدرک KYC | مالک |
-| GET | /businesses/:id | مشاهده جزئیات (عمومی برای APPROVED) | عمومی/مالک |
-| GET | /businesses | جستجو و فیلتر کسب‌وکارهای فعال | عمومی |
-| POST | /businesses/:id/branches | افزودن شعبه | مالک/منیجر |
-| POST | /businesses/:id/services | افزودن خدمت | مالک/منیجر |
-| POST | /businesses/:id/staff/invite | دعوت کارمند | مالک/منیجر |
-| PUT | /businesses/:id/working-hours | تنظیم ساعات کاری | مالک/منیجر |
-| PUT | /businesses/:id/cancellation-policy | تنظیم سیاست لغو | مالک |
+| POST | /businesses | ایجاد کسب‌وکار (خودکار OWNER میشه) | کاربر لاگین‌شده |
+| GET | /businesses/mine | لیست کسب‌وکارهایی که عضوشونم | کاربر لاگین‌شده |
+| GET | /businesses/:id | مشاهده‌ی کامل (owner-facing) | OWNER/MANAGER/STAFF همون کسب‌وکار |
+| PATCH | /businesses/:id | ویرایش اطلاعات پایه | OWNER/MANAGER |
+| PUT | /businesses/:id/cancellation-policy | تنظیم سیاست لغو | OWNER |
+| POST | /businesses/:id/documents | ثبت URL مدرک KYC (آپلود واقعی فایل: فاز بعدی) | OWNER |
+| GET | /discover/businesses?query&category&city&page&pageSize | جستجوی عمومی (فقط APPROVED) | عمومی |
+| GET | /discover/businesses/:id | جزئیات عمومی یک کسب‌وکار (فقط APPROVED) | عمومی |
+
+### Branch
+| Method | Path | توضیح | دسترسی |
+|---|---|---|---|
+| POST | /businesses/:id/branches | افزودن شعبه | OWNER/MANAGER |
+| GET | /businesses/:id/branches | لیست شعب | OWNER/MANAGER/STAFF |
+| PATCH | /businesses/:id/branches/:branchId | ویرایش شعبه | OWNER/MANAGER |
+
+### Service
+| Method | Path | توضیح | دسترسی |
+|---|---|---|---|
+| POST | /businesses/:id/services | افزودن خدمت | OWNER/MANAGER |
+| GET | /businesses/:id/services | لیست خدمات | OWNER/MANAGER/STAFF |
+| PATCH | /businesses/:id/services/:serviceId | ویرایش خدمت | OWNER/MANAGER |
+| POST | /businesses/:id/services/:serviceId/staff/:staffMemberId | اختصاص کارمند به خدمت | OWNER/MANAGER |
+| DELETE | /businesses/:id/services/:serviceId/staff/:staffMemberId | لغو اختصاص | OWNER/MANAGER |
+
+### Staff
+| Method | Path | توضیح | دسترسی |
+|---|---|---|---|
+| POST | /businesses/:id/staff/invite | افزودن کارمند (باید از قبل ثبت‌نام کرده باشه) | OWNER/MANAGER |
+| GET | /businesses/:id/staff | لیست کارکنان | OWNER/MANAGER/STAFF |
+| DELETE | /businesses/:id/staff/:staffMemberId | غیرفعال‌سازی (OWNER قابل غیرفعال‌سازی نیست) | OWNER/MANAGER |
+
+### Working Hours & Holidays
+| Method | Path | توضیح | دسترسی |
+|---|---|---|---|
+| PUT | /businesses/:id/working-hours | جایگزینی کامل ساعات کاری شعبه یا یک کارمند | OWNER/MANAGER |
+| POST | /businesses/:id/holidays | افزودن تعطیلی (شعبه یا کارمند) | OWNER/MANAGER |
+| GET | /businesses/:id/holidays?branchId&staffMemberId | لیست تعطیلات | OWNER/MANAGER/STAFF |
 
 ## Admin — بررسی کسب‌وکار
 | Method | Path | توضیح | دسترسی |
 |---|---|---|---|
-| GET | /admin/businesses?status=PENDING_REVIEW | صف بررسی | ادمین |
+| GET | /admin/businesses | صف بررسی (وضعیت PENDING_REVIEW) | ادمین |
 | POST | /admin/businesses/:id/approve | تایید کسب‌وکار | ادمین |
-| POST | /admin/businesses/:id/reject | رد با دلیل | ادمین |
-| POST | /admin/businesses/:id/suspend | تعلیق | ادمین |
+| POST | /admin/businesses/:id/reject | رد با دلیل (`{ reason }`) | ادمین |
+| POST | /admin/businesses/:id/suspend | تعلیق با دلیل (`{ reason }`) | ادمین |
 
 ## Booking (موتور رزرو)
 | Method | Path | توضیح | دسترسی |
