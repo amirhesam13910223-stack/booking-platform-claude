@@ -9,6 +9,8 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     services:
       postgres:
@@ -47,9 +49,22 @@ jobs:
           DATABASE_URL: postgresql://booking:booking_test_password@localhost:5432/booking_platform_test
 
       - name: Test
-        run: npm run test
+        run: npm run test 2>&1 | tee /tmp/test-output.log
         env:
           DATABASE_URL: postgresql://booking:booking_test_password@localhost:5432/booking_platform_test
+
+      - name: On test failure, commit debug log for inspection
+        if: failure()
+        run: |
+          mkdir -p .ci-debug
+          cp /tmp/test-output.log .ci-debug/last-test-failure.log
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .ci-debug/last-test-failure.log
+          git commit -m "chore: capture test failure log [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
         run: npm run build
