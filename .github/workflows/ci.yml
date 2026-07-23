@@ -53,3 +53,52 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Smoke test — boot server and hit real endpoints
+        run: |
+          set -e
+          node apps/backend/dist/main.js &
+          SERVER_PID=$!
+
+          for i in $(seq 1 20); do
+            if curl -sf http://localhost:3001/api/v1/auth/me -o /dev/null 2>/dev/null; then break; fi
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/api/v1/auth/me | grep -q "401"; then break; fi
+            sleep 1
+          done
+
+          echo "--- register/request-otp ---"
+          OTP_RESPONSE=$(curl -s -X POST http://localhost:3001/api/v1/auth/register/request-otp \
+            -H "Content-Type: application/json" \
+            -d '{"phone":"09121234567"}')
+          echo "$OTP_RESPONSE"
+          CODE=$(echo "$OTP_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (!j.debugCode) { console.error('debugCode missing!'); process.exit(1); } console.log(j.debugCode); })")
+          echo "OTP code extracted: $CODE"
+
+          echo "--- register/verify ---"
+          REGISTER_RESPONSE=$(curl -s -X POST http://localhost:3001/api/v1/auth/register/verify \
+            -H "Content-Type: application/json" \
+            -d "{\"phone\":\"09121234567\",\"code\":\"$CODE\",\"fullName\":\"تست\",\"password\":\"Password1\"}")
+          echo "$REGISTER_RESPONSE"
+          ACCESS_TOKEN=$(echo "$REGISTER_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (!j.accessToken) { console.error('accessToken missing!'); process.exit(1); } console.log(j.accessToken); })")
+
+          echo "--- auth/me with access token ---"
+          ME_RESPONSE=$(curl -s http://localhost:3001/api/v1/auth/me -H "Authorization: Bearer $ACCESS_TOKEN")
+          echo "$ME_RESPONSE"
+          echo "$ME_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (j.phone !== '09121234567') { console.error('phone mismatch!'); process.exit(1); } console.log('OK: /auth/me matches registered phone'); })"
+
+          echo "--- auth/me without token must be rejected ---"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/api/v1/auth/me)
+          if [ "$STATUS" != "401" ]; then echo "expected 401, got $STATUS"; exit 1; fi
+          echo "OK: unauthenticated request correctly rejected with 401"
+
+          kill $SERVER_PID
+        env:
+          DATABASE_URL: postgresql://booking:booking_test_password@localhost:5432/booking_platform_test
+          JWT_ACCESS_SECRET: ci-smoke-test-access-secret
+          JWT_REFRESH_SECRET: ci-smoke-test-refresh-secret
+          JWT_ACCESS_EXPIRES_IN: 15m
+          JWT_REFRESH_EXPIRES_IN: 30d
+          PORT: 3001
+          CORS_ORIGIN: http://localhost:3000
+          NODE_ENV: development
+          OTP_DEBUG_EXPOSE: "true"
