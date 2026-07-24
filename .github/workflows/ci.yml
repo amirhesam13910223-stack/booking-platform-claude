@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
 
     services:
       postgres:
@@ -53,34 +54,30 @@ jobs:
         env:
           DATABASE_URL: postgresql://booking:booking_test_password@localhost:5432/booking_platform_test
 
-      - name: On test failure, commit debug log for inspection
+      - name: On test failure, publish debug log as an Issue
         if: failure()
         run: |
-          mkdir -p .ci-debug
-          cp /tmp/test-output.log .ci-debug/last-test-failure.log
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .ci-debug/last-test-failure.log
-          git commit -m "chore: capture test failure log [skip ci]"
-          git push
+          gh issue create \
+            --title "CI failure: Test — run ${{ github.run_id }}" \
+            --body-file /tmp/test-output.log
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build
         run: set -o pipefail && npm run build 2>&1 | tee /tmp/build-output.log
 
-      - name: On build failure, commit debug log for inspection
+      - name: On build failure, publish debug log as an Issue
         if: failure()
         run: |
-          mkdir -p .ci-debug
-          cp /tmp/build-output.log .ci-debug/last-build-failure.log
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .ci-debug/last-build-failure.log
-          git commit -m "chore: capture build failure log [skip ci]"
-          git push
+          if [ -f /tmp/build-output.log ]; then
+            gh issue create \
+              --title "CI failure: Build — run ${{ github.run_id }}" \
+              --body-file /tmp/build-output.log
+          else
+            echo "No build-output.log (Build step was skipped) — nothing to publish"
+          fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Smoke test — boot server and hit real endpoints
         run: |
