@@ -308,6 +308,7 @@ model Booking {
   holdExpiresAt DateTime? // انقضای قفل موقت soft-hold
   cancelledAt   DateTime?
   cancelReason  String?
+  recurringGroupId String? // رزروهای تکرارشونده که در یک درخواست ساخته شدن، این id مشترک رو دارن
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -329,6 +330,7 @@ model Booking {
   @@index([branchId, startTime])
   @@index([userId])
   @@index([status])
+  @@index([recurringGroupId])
 }
 
 // ------------------------------------------------------------

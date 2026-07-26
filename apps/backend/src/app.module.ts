@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { SmsModule } from './common/sms/sms.module';
 import { AuditModule } from './common/audit/audit.module';
+import { RedisModule } from './common/redis/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -17,12 +19,14 @@ import { StaffModule } from './modules/staff/staff.module';
 import { WorkingHoursModule } from './modules/working-hours/working-hours.module';
 import { DiscoveryModule } from './modules/discovery/discovery.module';
 import { AdminBusinessModule } from './modules/admin/business/admin-business.module';
-// ماژول‌های دامنه‌ی بعدی (فاز ۳ به بعد) این‌جا اضافه میشن:
-// BookingModule, PaymentModule, ...
+import { BookingModule } from './modules/booking/booking.module';
+// ماژول‌های دامنه‌ی بعدی (فاز ۴ به بعد) این‌جا اضافه میشن:
+// PaymentModule, ...
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: () => [{ ttl: 60000, limit: 100 }],
@@ -30,6 +34,7 @@ import { AdminBusinessModule } from './modules/admin/business/admin-business.mod
     PrismaModule,
     SmsModule,
     AuditModule,
+    RedisModule,
     AuthModule,
     UsersModule,
     BusinessModule,
@@ -39,6 +44,7 @@ import { AdminBusinessModule } from './modules/admin/business/admin-business.mod
     WorkingHoursModule,
     DiscoveryModule,
     AdminBusinessModule,
+    BookingModule,
   ],
   providers: [
     // ترتیب مهمه: اول احراز هویت (کاربر کیه)، بعد نقش سراسری (ادمین یا نه)،

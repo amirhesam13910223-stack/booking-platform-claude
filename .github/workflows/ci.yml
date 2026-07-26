@@ -26,6 +26,14 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -53,6 +61,7 @@ jobs:
         run: set -o pipefail && npm run test 2>&1 | tee /tmp/test-output.log
         env:
           DATABASE_URL: postgresql://booking:booking_test_password@localhost:5432/booking_platform_test
+          REDIS_URL: redis://localhost:6379
 
       - name: On test failure, publish debug log as an Issue
         if: failure()
@@ -149,6 +158,64 @@ jobs:
           if [ "$FORBIDDEN_STATUS" != "403" ]; then echo "expected 403, got $FORBIDDEN_STATUS"; exit 1; fi
           echo "OK: non-member correctly forbidden from another user's business (BusinessRoleGuard works)"
 
+          echo "--- approve business directly in DB (no admin bootstrap endpoint exists yet) ---"
+          PGPASSWORD=booking_test_password psql -h localhost -U booking -d booking_platform_test \
+            -c "UPDATE \"Business\" SET status='APPROVED' WHERE id='$BUSINESS_ID';"
+
+          echo "--- owner creates a branch ---"
+          BRANCH_RESPONSE=$(curl -s -X POST http://localhost:3001/api/v1/businesses/$BUSINESS_ID/branches \
+            -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -d '{"name":"شعبه مرکزی","address":"تهران، خیابان تست، پلاک ۱","latitude":35.7,"longitude":51.4}')
+          echo "$BRANCH_RESPONSE"
+          BRANCH_ID=$(echo "$BRANCH_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (!j.id) { console.error('branch creation failed'); process.exit(1); } console.log(j.id); })")
+
+          echo "--- owner creates a service (no deposit required) ---"
+          SERVICE_RESPONSE=$(curl -s -X POST http://localhost:3001/api/v1/businesses/$BUSINESS_ID/services \
+            -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -d '{"name":"کوتاهی مو","durationMinutes":30,"price":100000,"requiresDeposit":false}')
+          echo "$SERVICE_RESPONSE"
+          SERVICE_ID=$(echo "$SERVICE_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (!j.id) { console.error('service creation failed'); process.exit(1); } console.log(j.id); })")
+
+          echo "--- owner sets working hours for all 7 days (avoids date-dependent flakiness) ---"
+          HOURS_JSON=$(node -e "console.log(JSON.stringify({branchId:'$BRANCH_ID', hours:[0,1,2,3,4,5,6].map(d=>({dayOfWeek:d,startTime:'00:00',endTime:'23:30'}))}))")
+          WH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X PUT http://localhost:3001/api/v1/businesses/$BUSINESS_ID/working-hours \
+            -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -d "$HOURS_JSON")
+          if [ "$WH_STATUS" != "200" ] && [ "$WH_STATUS" != "201" ]; then echo "expected 200/201, got $WH_STATUS"; exit 1; fi
+          echo "OK: working hours set"
+
+          echo "--- check availability (public, no auth) ---"
+          TOMORROW=$(date -u -d "+1 day" +%F)
+          AVAIL_RESPONSE=$(curl -s "http://localhost:3001/api/v1/discover/availability/$BUSINESS_ID?serviceId=$SERVICE_ID&branchId=$BRANCH_ID&date=$TOMORROW")
+          echo "$AVAIL_RESPONSE"
+          SLOT_START=$(echo "$AVAIL_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (!Array.isArray(j) || j.length === 0) { console.error('no free slots returned!'); process.exit(1); } console.log(j[0].startTime); })")
+          echo "First free slot: $SLOT_START"
+
+          echo "--- hold that slot (concurrency-safe reservation engine) ---"
+          HOLD_RESPONSE=$(curl -s -X POST http://localhost:3001/api/v1/bookings/hold \
+            -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -d "{\"businessId\":\"$BUSINESS_ID\",\"branchId\":\"$BRANCH_ID\",\"serviceId\":\"$SERVICE_ID\",\"startTime\":\"$SLOT_START\"}")
+          echo "$HOLD_RESPONSE"
+          BOOKING_ID=$(echo "$HOLD_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (!j.id || j.status !== 'HOLD') { console.error('unexpected hold response'); process.exit(1); } console.log(j.id); })")
+          echo "Booking held: $BOOKING_ID"
+
+          echo "--- a different user trying to hold the EXACT SAME slot must be rejected (double-booking prevention) ---"
+          CONFLICT_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:3001/api/v1/bookings/hold \
+            -H "Content-Type: application/json" -H "Authorization: Bearer $OTHER_TOKEN" \
+            -d "{\"businessId\":\"$BUSINESS_ID\",\"branchId\":\"$BRANCH_ID\",\"serviceId\":\"$SERVICE_ID\",\"startTime\":\"$SLOT_START\"}")
+          if [ "$CONFLICT_RESPONSE" != "409" ]; then echo "expected 409 for double-booking, got $CONFLICT_RESPONSE"; exit 1; fi
+          echo "OK: concurrent hold on the same slot correctly rejected with 409 (no double-booking possible)"
+
+          echo "--- confirm the booking (no deposit required -> should go straight to CONFIRMED) ---"
+          CONFIRM_RESPONSE=$(curl -s -X POST http://localhost:3001/api/v1/bookings/$BOOKING_ID/confirm \
+            -H "Authorization: Bearer $ACCESS_TOKEN")
+          echo "$CONFIRM_RESPONSE"
+          echo "$CONFIRM_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (j.status !== 'CONFIRMED') { console.error('expected CONFIRMED, got ' + j.status); process.exit(1); } console.log('OK: booking confirmed'); })"
+
+          echo "--- booking appears in the user's booking list ---"
+          MY_BOOKINGS=$(curl -s http://localhost:3001/api/v1/bookings/me -H "Authorization: Bearer $ACCESS_TOKEN")
+          echo "$MY_BOOKINGS" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (!j.some(b => b.id === '$BOOKING_ID')) { console.error('booking missing from /bookings/me'); process.exit(1); } console.log('OK: booking appears in /bookings/me'); })"
+
           kill $SERVER_PID
         env:
           DATABASE_URL: postgresql://booking:booking_test_password@localhost:5432/booking_platform_test
@@ -160,3 +227,4 @@ jobs:
           CORS_ORIGIN: http://localhost:3000
           NODE_ENV: development
           OTP_DEBUG_EXPOSE: "true"
+          REDIS_URL: redis://localhost:6379

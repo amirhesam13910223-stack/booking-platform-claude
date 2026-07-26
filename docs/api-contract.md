@@ -86,16 +86,25 @@
 | POST | /admin/businesses/:id/suspend | تعلیق با دلیل (`{ reason }`) | ادمین |
 
 ## Booking (موتور رزرو)
+
+**نکته‌ی پیاده‌سازی**: مسیر availability عمداً زیر `/discover/availability` هست (نه `/businesses/:id/availability`) — همون دلیل قبلی (تداخل با route پارامتری guard-شده). قفل concurrency-safe با Redis (`SET NX PX`) + بررسی تراکنشی تداخل زمانی در دیتابیس پیاده‌سازی شده؛ هر ۱ دقیقه یک cron job، رزروهای HOLD منقضی‌شده رو خودکار آزاد می‌کنه.
+
 | Method | Path | توضیح | دسترسی |
 |---|---|---|---|
-| GET | /businesses/:id/availability?serviceId&staffId&date | زمان‌های آزاد | عمومی |
-| POST | /bookings/hold | ایجاد قفل موقت روی یک بازه | کاربر لاگین‌شده |
-| POST | /bookings/:id/confirm | تایید نهایی (بعد پرداخت/بدون نیاز به پرداخت) | کاربر لاگین‌شده |
-| POST | /bookings/:id/cancel | لغو رزرو | کاربر/کسب‌وکار |
-| POST | /bookings/:id/reschedule | تغییر زمان | کاربر لاگین‌شده |
+| GET | /discover/availability/:businessId?serviceId&staffMemberId&branchId&date | زمان‌های آزاد | عمومی |
+| POST | /bookings/hold | ایجاد قفل موقت روی یک بازه (concurrency-safe) | کاربر لاگین‌شده |
+| POST | /bookings/recurring | رزرو تکرارشونده‌ی هفتگی (all-or-nothing، حداکثر ۵۲ جلسه) | کاربر لاگین‌شده |
+| POST | /bookings/:id/confirm | تایید نهایی (به PENDING اگر بیعانه لازمه، وگرنه CONFIRMED) | کاربر لاگین‌شده (مالک رزرو) |
+| POST | /bookings/recurring/:groupId/confirm | تایید همه‌ی جلسات یک رزرو تکرارشونده | کاربر لاگین‌شده (مالک) |
+| POST | /bookings/:id/cancel | لغو توسط کاربر (محاسبه‌ی خودکار جریمه طبق سیاست لغو) | کاربر لاگین‌شده (مالک رزرو) |
+| POST | /bookings/:id/reschedule | تغییر زمان (اعتبارسنجی مجدد با همون منطق availability) | کاربر لاگین‌شده (مالک رزرو) |
 | GET | /bookings/me | لیست نوبت‌های من | کاربر لاگین‌شده |
-| GET | /businesses/:id/bookings | تقویم رزروهای کسب‌وکار | مالک/منیجر/کارمند |
-| PATCH | /businesses/:id/bookings/:bookingId/status | تغییر وضعیت (تایید/انجام‌شده/no-show) | مالک/منیجر |
+| GET | /businesses/:id/bookings?branchId&staffMemberId&from&to&status | تقویم رزروهای کسب‌وکار | OWNER/MANAGER/STAFF |
+| PATCH | /businesses/:id/bookings/:bookingId/status | تغییر وضعیت (با ماتریس انتقال مجاز) | OWNER/MANAGER |
+| POST | /businesses/:id/bookings/:bookingId/cancel | لغو توسط کسب‌وکار (بدون جریمه برای مشتری) | OWNER/MANAGER |
+
+### دامنه‌ی خارج از این فاز (تصمیم آگاهانه)
+لیست انتظار (waitlist) و رزرو گروهی چند-نفره (چند مهمان روی یک نوبت مشترک) در این فاز پیاده نشدن — schema فعلی این مفاهیم رو نداره و افزودنشون نیاز به migration و طراحی جدا داره. رزرو تکرارشونده (چند جلسه‌ی هفتگی برای همون کاربر) به‌جاش پیاده شده چون با schema فعلی به‌طور طبیعی جا می‌افته.
 
 ## Payment
 | Method | Path | توضیح | دسترسی |
