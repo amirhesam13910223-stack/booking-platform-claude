@@ -216,6 +216,50 @@ jobs:
           MY_BOOKINGS=$(curl -s http://localhost:3001/api/v1/bookings/me -H "Authorization: Bearer $ACCESS_TOKEN")
           echo "$MY_BOOKINGS" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (!j.some(b => b.id === '$BOOKING_ID')) { console.error('booking missing from /bookings/me'); process.exit(1); } console.log('OK: booking appears in /bookings/me'); })"
 
+          echo "--- top up wallet (initiate -> simulate gateway callback -> verify balance) ---"
+          TOPUP_RESPONSE=$(curl -s -X POST http://localhost:3001/api/v1/wallet/topup \
+            -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -d '{"amount":200000}')
+          echo "$TOPUP_RESPONSE"
+          TOPUP_REF=$(echo "$TOPUP_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); const u = new URL(j.paymentUrl); const ref = u.searchParams.get('gatewayRefId'); if (!ref) { console.error('gatewayRefId missing from paymentUrl'); process.exit(1); } console.log(ref); })")
+          CALLBACK_RESPONSE=$(curl -s "http://localhost:3001/api/v1/payments/callback/mock?gatewayRefId=$TOPUP_REF")
+          echo "$CALLBACK_RESPONSE"
+          echo "$CALLBACK_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (j.status !== 'SUCCESS') { console.error('topup callback did not succeed'); process.exit(1); } console.log('OK: topup callback verified'); })"
+          WALLET_AFTER_TOPUP=$(curl -s http://localhost:3001/api/v1/wallet/me -H "Authorization: Bearer $ACCESS_TOKEN")
+          echo "$WALLET_AFTER_TOPUP" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (Number(j.balance) !== 200000) { console.error('expected balance 200000, got ' + j.balance); process.exit(1); } console.log('OK: wallet balance is 200000 after topup'); })"
+
+          echo "--- create a deposit-required service and book it ---"
+          DEPOSIT_SERVICE_RESPONSE=$(curl -s -X POST http://localhost:3001/api/v1/businesses/$BUSINESS_ID/services \
+            -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -d '{"name":"رنگ مو","durationMinutes":30,"price":500000,"requiresDeposit":true,"depositPercent":20}')
+          echo "$DEPOSIT_SERVICE_RESPONSE"
+          DEPOSIT_SERVICE_ID=$(echo "$DEPOSIT_SERVICE_RESPONSE" | node -e "process.stdin.once('data', d => console.log(JSON.parse(d).id))")
+
+          DEPOSIT_AVAIL=$(curl -s "http://localhost:3001/api/v1/discover/availability/$BUSINESS_ID?serviceId=$DEPOSIT_SERVICE_ID&branchId=$BRANCH_ID&date=$TOMORROW")
+          DEPOSIT_SLOT=$(echo "$DEPOSIT_AVAIL" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (!j.length) { console.error('no slots for deposit service'); process.exit(1); } console.log(j[0].startTime); })")
+
+          DEPOSIT_HOLD=$(curl -s -X POST http://localhost:3001/api/v1/bookings/hold \
+            -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -d "{\"businessId\":\"$BUSINESS_ID\",\"branchId\":\"$BRANCH_ID\",\"serviceId\":\"$DEPOSIT_SERVICE_ID\",\"startTime\":\"$DEPOSIT_SLOT\"}")
+          DEPOSIT_BOOKING_ID=$(echo "$DEPOSIT_HOLD" | node -e "process.stdin.once('data', d => console.log(JSON.parse(d).id))")
+
+          DEPOSIT_CONFIRM=$(curl -s -X POST http://localhost:3001/api/v1/bookings/$DEPOSIT_BOOKING_ID/confirm -H "Authorization: Bearer $ACCESS_TOKEN")
+          echo "$DEPOSIT_CONFIRM"
+          echo "$DEPOSIT_CONFIRM" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (j.status !== 'PENDING') { console.error('expected PENDING (deposit required), got ' + j.status); process.exit(1); } console.log('OK: deposit-required booking correctly went to PENDING, not CONFIRMED'); })"
+
+          echo "--- pay the deposit from wallet ---"
+          PAY_RESPONSE=$(curl -s -X POST http://localhost:3001/api/v1/payments/initiate \
+            -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -d "{\"bookingId\":\"$DEPOSIT_BOOKING_ID\",\"method\":\"wallet\"}")
+          echo "$PAY_RESPONSE"
+          echo "$PAY_RESPONSE" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (j.paidFromWallet !== true) { console.error('expected wallet payment to succeed'); process.exit(1); } console.log('OK: deposit paid from wallet'); })"
+
+          WALLET_AFTER_PAY=$(curl -s http://localhost:3001/api/v1/wallet/me -H "Authorization: Bearer $ACCESS_TOKEN")
+          echo "$WALLET_AFTER_PAY" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); if (Number(j.balance) !== 100000) { console.error('expected balance 100000 after deposit payment, got ' + j.balance); process.exit(1); } console.log('OK: wallet balance correctly reduced to 100000 (200000 - 20% of 500000)'); })"
+
+          FINAL_BOOKINGS=$(curl -s http://localhost:3001/api/v1/bookings/me -H "Authorization: Bearer $ACCESS_TOKEN")
+          echo "$FINAL_BOOKINGS" | node -e "process.stdin.once('data', d => { const j = JSON.parse(d); const b = j.find(x => x.id === '$DEPOSIT_BOOKING_ID'); if (!b || b.status !== 'CONFIRMED') { console.error('expected deposit booking to be CONFIRMED after payment, got ' + (b && b.status)); process.exit(1); } console.log('OK: booking automatically CONFIRMED after successful deposit payment'); })"
+
           kill $SERVER_PID
         env:
           DATABASE_URL: postgresql://booking:booking_test_password@localhost:5432/booking_platform_test

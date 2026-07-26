@@ -20,8 +20,12 @@ import { WorkingHoursModule } from './modules/working-hours/working-hours.module
 import { DiscoveryModule } from './modules/discovery/discovery.module';
 import { AdminBusinessModule } from './modules/admin/business/admin-business.module';
 import { BookingModule } from './modules/booking/booking.module';
-// ماژول‌های دامنه‌ی بعدی (فاز ۴ به بعد) این‌جا اضافه میشن:
-// PaymentModule, ...
+import { PaymentGatewayModule } from './common/payment-gateway/payment-gateway.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { WalletModule } from './modules/wallet/wallet.module';
+import { SettlementModule } from './modules/settlement/settlement.module';
+// ماژول‌های دامنه‌ی بعدی (فاز ۵ به بعد) این‌جا اضافه میشن:
+// DiscountModule, LoyaltyModule, ReferralModule, ReviewModule, ...
 
 @Module({
   imports: [
@@ -45,6 +49,10 @@ import { BookingModule } from './modules/booking/booking.module';
     DiscoveryModule,
     AdminBusinessModule,
     BookingModule,
+    PaymentGatewayModule,
+    PaymentModule,
+    WalletModule,
+    SettlementModule,
   ],
   providers: [
     // ترتیب مهمه: اول احراز هویت (کاربر کیه)، بعد نقش سراسری (ادمین یا نه)،

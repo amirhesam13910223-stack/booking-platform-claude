@@ -107,13 +107,16 @@
 لیست انتظار (waitlist) و رزرو گروهی چند-نفره (چند مهمان روی یک نوبت مشترک) در این فاز پیاده نشدن — schema فعلی این مفاهیم رو نداره و افزودنشون نیاز به migration و طراحی جدا داره. رزرو تکرارشونده (چند جلسه‌ی هفتگی برای همون کاربر) به‌جاش پیاده شده چون با schema فعلی به‌طور طبیعی جا می‌افته.
 
 ## Payment
+
+**نکته‌ی پیاده‌سازی**: درگاه فعلی `MockPaymentGateway` است (زیر `common/payment-gateway/`، پشت interface یکسان با آینده) — تا وقتی merchant ID واقعی زرین‌پال وصل بشه. حتی نسخه‌ی mock هم verify واقعی (مبلغ + جلوگیری از replay) انجام می‌ده، نه صرفاً `true` برمی‌گردونه.
+
 | Method | Path | توضیح | دسترسی |
 |---|---|---|---|
-| POST | /payments/initiate | شروع پرداخت برای یک booking | کاربر لاگین‌شده |
-| GET/POST | /payments/callback/:gateway | callback درگاه (verify سمت سرور) | عمومی (امضا/verify اجباری) |
-| POST | /payments/:id/refund | استرداد وجه | ادمین/سیستم |
-| GET | /wallet/me | موجودی و تاریخچه کیف پول | کاربر لاگین‌شده |
-| POST | /wallet/topup | شارژ کیف پول | کاربر لاگین‌شده |
+| POST | /payments/initiate | شروع پرداخت برای یک booking (`method: gateway \| wallet`) | کاربر لاگین‌شده (مالک booking) |
+| GET | /payments/callback/:gateway?gatewayRefId= | callback درگاه (verify سرور-به-سرور، idempotent) | عمومی (امنیت با verify تامین میشه) |
+| POST | /payments/:id/refund | استرداد وجه (همیشه به کیف پول، نه بازگشت مستقیم به کارت) | ادمین |
+| GET | /wallet/me | موجودی و ۲۰ تراکنش اخیر کیف پول | کاربر لاگین‌شده |
+| POST | /wallet/topup | شارژ کیف پول (حداقل ۱۰٬۰۰۰ تومان) | کاربر لاگین‌شده |
 
 ## Discount / Loyalty / Referral
 | Method | Path | توضیح | دسترسی |
