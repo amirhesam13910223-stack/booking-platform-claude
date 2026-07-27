@@ -22,10 +22,13 @@ export class SettlementService {
       },
     });
 
-    const grossAmount = payments.reduce(
-      (sum: number, p: { amount: number | string }) => sum + Number(p.amount),
-      0,
-    );
+    // نکته: پارامتر عمداً `any` صریحه (نه امضای دقیق‌تر) چون تایپ
+    // واقعی این فیلد در Prisma (`Decimal`) در سندباکس توسعه که client
+    // کامل generate نمی‌شه در دسترس نیست؛ `any` صریح هم خطای
+    // noImplicitAny محلی رو رفع می‌کنه هم با تایپ واقعی روی CI (که
+    // Decimal واقعیه) بدون تناقض کار می‌کنه.
+    const amounts = payments.map((p: any) => Number(p.amount)); // eslint-disable-line @typescript-eslint/no-explicit-any
+    const grossAmount = amounts.reduce((sum: number, n: number) => sum + n, 0);
     const commissionPercent = Number(business.commissionPercent);
     const commissionAmount = Math.round((grossAmount * commissionPercent) / 100);
     const netAmount = grossAmount - commissionAmount;
