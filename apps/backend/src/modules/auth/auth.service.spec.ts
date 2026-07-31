@@ -5,6 +5,7 @@ import { ConflictException, UnauthorizedException, BadRequestException } from '@
 import { AuthService } from './auth.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { OtpService } from '../otp/otp.service';
+import { ReferralService } from '../referral/referral.service';
 import { hashPassword } from '../../common/crypto/hash.util';
 
 describe('AuthService', () => {
@@ -16,6 +17,7 @@ describe('AuthService', () => {
     refreshToken: Record<string, jest.Mock>;
   };
   let otp: { requestOtp: jest.Mock; verifyOtp: jest.Mock };
+  let referral: { registerReferral: jest.Mock };
 
   const ctx = { deviceInfo: 'jest-test-agent', ipAddress: '127.0.0.1' };
 
@@ -32,12 +34,14 @@ describe('AuthService', () => {
       },
     };
     otp = { requestOtp: jest.fn(), verifyOtp: jest.fn() };
+    referral = { registerReferral: jest.fn() };
 
     const moduleRef = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: PrismaService, useValue: prisma },
         { provide: OtpService, useValue: otp },
+        { provide: ReferralService, useValue: referral },
         JwtService,
         {
           provide: ConfigService,
@@ -103,6 +107,26 @@ describe('AuthService', () => {
       expect(prisma.refreshToken.create).toHaveBeenCalled();
       expect(result.accessToken).toBeDefined();
       expect(result.refreshToken).toHaveLength(96); // 48 بایت hex
+      expect(referral.registerReferral).not.toHaveBeenCalled(); // بدون کد ارجاع
+    });
+
+    it('اگه کد ارجاع داده شده بود، registerReferral رو صدا می‌زنه', async () => {
+      otp.verifyOtp.mockResolvedValue(true);
+      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue({ id: 'u2', globalRole: 'USER', phone: '09121234568' });
+
+      await service.verifyRegisterAndCreateUser(
+        {
+          phone: '09121234568',
+          code: '123456',
+          fullName: 'تست دو',
+          password: 'Password1',
+          referralCode: 'referrer-id-1',
+        },
+        ctx,
+      );
+
+      expect(referral.registerReferral).toHaveBeenCalledWith('referrer-id-1', 'u2');
     });
   });
 

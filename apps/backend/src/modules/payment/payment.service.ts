@@ -9,6 +9,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { PAYMENT_GATEWAY, PaymentGateway } from '../../common/payment-gateway/payment-gateway.interface';
 import { InitiatePaymentDto } from './dto/initiate-payment.dto';
+import { BookingService } from '../booking/booking.service';
 
 const GATEWAY_NAME = 'mock'; // بعداً 'zarinpal' جایگزین میشه
 
@@ -18,6 +19,7 @@ export class PaymentService {
     private readonly prisma: PrismaService,
     @Inject(PAYMENT_GATEWAY) private readonly gateway: PaymentGateway,
     private readonly config: ConfigService,
+    private readonly bookingService: BookingService,
   ) {}
 
   // ---------------------------------------------------------
@@ -77,7 +79,15 @@ export class PaymentService {
         },
       });
 
-      await tx.booking.update({ where: { id: bookingId }, data: { status: 'CONFIRMED' } });
+      const booking = await tx.booking.update({
+        where: { id: bookingId },
+        data: { status: 'CONFIRMED' },
+      });
+      await this.bookingService.awardPostPurchaseRewards(
+        tx,
+        userId,
+        Number(booking.priceSnapshot) - Number(booking.discountAmount),
+      );
 
       return { paidFromWallet: true, payment };
     });
@@ -161,6 +171,11 @@ export class PaymentService {
         const booking = await tx.booking.findUnique({ where: { id: payment.bookingId } });
         if (booking?.status === 'PENDING') {
           await tx.booking.update({ where: { id: payment.bookingId }, data: { status: 'CONFIRMED' } });
+          await this.bookingService.awardPostPurchaseRewards(
+            tx,
+            payment.userId,
+            Number(booking.priceSnapshot) - Number(booking.discountAmount),
+          );
         }
       }
 

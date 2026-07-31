@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { OtpService } from '../otp/otp.service';
+import { ReferralService } from '../referral/referral.service';
 import { hashPassword, verifyPassword, sha256Hash } from '../../common/crypto/hash.util';
 import { VerifyRegisterDto } from './dto/verify-register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -34,6 +35,7 @@ export class AuthService {
     private readonly otp: OtpService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    private readonly referral: ReferralService,
   ) {}
 
   // ---------------------------------------------------------
@@ -78,6 +80,11 @@ export class AuthService {
     // چون در فازهای بعدی (پرداخت/وفاداری) بدون این‌ها کار نمی‌کنه.
     await this.prisma.wallet.create({ data: { userId: user.id } });
     await this.prisma.loyaltyAccount.create({ data: { userId: user.id } });
+
+    if (dto.referralCode) {
+      // خطای این متد جلوی ثبت‌نام رو نمی‌گیره (خودش داخلش try/catch داره)
+      await this.referral.registerReferral(dto.referralCode, user.id);
+    }
 
     return this.issueTokenPair(user.id, user.globalRole, ctx);
   }

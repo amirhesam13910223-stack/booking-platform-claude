@@ -5,9 +5,10 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { OtpModule } from '../otp/otp.module';
+import { ReferralModule } from '../referral/referral.module';
 
 @Module({
-  imports: [PassportModule, JwtModule.register({}), OtpModule],
+  imports: [PassportModule, JwtModule.register({}), OtpModule, ReferralModule],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],

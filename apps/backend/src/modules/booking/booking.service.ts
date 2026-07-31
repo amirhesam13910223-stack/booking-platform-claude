@@ -9,6 +9,9 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { RedisLockService } from '../../common/redis/redis-lock.service';
 import { AvailabilityService } from './availability.service';
+import { CouponService } from '../coupon/coupon.service';
+import { LoyaltyService } from '../loyalty/loyalty.service';
+import { ReferralService } from '../referral/referral.service';
 import { HoldBookingDto } from './dto/hold-booking.dto';
 import { CreateRecurringBookingDto } from './dto/create-recurring-booking.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
@@ -35,6 +38,9 @@ export class BookingService {
     private readonly prisma: PrismaService,
     private readonly lock: RedisLockService,
     private readonly availability: AvailabilityService,
+    private readonly coupon: CouponService,
+    private readonly loyalty: LoyaltyService,
+    private readonly referral: ReferralService,
   ) {}
 
   // ---------------------------------------------------------
@@ -58,13 +64,26 @@ export class BookingService {
         this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
           await this.assertSlotFree(tx, dto.branchId, dto.staffMemberId ?? null, startTime, endTime);
 
+          let discountAmount = 0;
+          let redeemedCouponId: string | undefined;
+          if (dto.couponCode) {
+            const couponResult = await this.coupon.checkAndRedeem(
+              tx,
+              dto.couponCode,
+              userId,
+              dto.businessId,
+              Number(service.price),
+            );
+            discountAmount = couponResult.discountAmount;
+            redeemedCouponId = couponResult.couponId;
+          }
+          const priceAfterDiscount = Number(service.price) - discountAmount;
+
           const depositRequired = service.requiresDeposit
-            ? this.round2(
-                (Number(service.price) * Number(service.depositPercent ?? 0)) / 100,
-              )
+            ? this.round2((priceAfterDiscount * Number(service.depositPercent ?? 0)) / 100)
             : 0;
 
-          return tx.booking.create({
+          const booking = await tx.booking.create({
             data: {
               userId,
               businessId: dto.businessId,
@@ -75,11 +94,25 @@ export class BookingService {
               endTime,
               status: 'HOLD',
               priceSnapshot: service.price,
+              discountAmount,
+              couponCode: dto.couponCode,
               depositRequired,
               cancellationPolicySnapshot: business.cancellationPolicy as Prisma.InputJsonValue,
               holdExpiresAt: new Date(Date.now() + HOLD_TTL_MINUTES * 60000),
             },
           });
+
+          // CouponUsage قبل از ساخته‌شدن booking ثبت شده (چون باید قبل
+          // از رزرو مطمئن بشیم قابل استفاده‌ست)؛ حالا bookingId رو
+          // بهش وصل می‌کنیم تا برای گزارش‌گیری بعدی قابل ردیابی باشه.
+          if (redeemedCouponId) {
+            await tx.couponUsage.update({
+              where: { couponId_userId: { couponId: redeemedCouponId, userId } },
+              data: { bookingId: booking.id },
+            });
+          }
+
+          return booking;
         }),
       );
     } catch (err) {
@@ -107,10 +140,36 @@ export class BookingService {
     const service = await this.prisma.service.findUnique({ where: { id: booking.serviceId } });
     const nextStatus = service?.requiresDeposit ? 'PENDING' : 'CONFIRMED';
 
-    return this.prisma.booking.update({
-      where: { id: bookingId },
-      data: { status: nextStatus, holdExpiresAt: null },
+    return this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const updated = await tx.booking.update({
+        where: { id: bookingId },
+        data: { status: nextStatus, holdExpiresAt: null },
+      });
+
+      // اگه بیعانه لازم نبود، همین‌جا "خرید قطعی" حساب میشه و باید
+      // پاداش‌ها اهدا بشن. اگه بیعانه لازم بود، این کار موقع پرداخت
+      // موفق (PaymentService) انجام میشه، نه این‌جا.
+      if (nextStatus === 'CONFIRMED') {
+        await this.awardPostPurchaseRewards(tx, userId, Number(booking.priceSnapshot) - Number(booking.discountAmount));
+      }
+
+      return updated;
     });
+  }
+
+  /**
+   * بعد از هر "خرید قطعی" (رزرو بدون بیعانه که مستقیم CONFIRMED میشه،
+   * یا پرداخت موفق بیعانه) صدا زده میشه — هم امتیاز وفاداری میده هم
+   * در صورت وجود ارجاع در انتظار، پاداششو فعال می‌کنه. باید داخل
+   * همون تراکنشی که وضعیت رزرو/پرداخت رو نهایی می‌کنه صدا زده بشه.
+   */
+  async awardPostPurchaseRewards(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    amountToman: number,
+  ): Promise<void> {
+    await this.loyalty.earnFromPurchase(tx, userId, amountToman, 'خرید رزرو');
+    await this.referral.rewardIfEligible(tx, userId);
   }
 
   async confirmGroup(recurringGroupId: string, userId: string) {

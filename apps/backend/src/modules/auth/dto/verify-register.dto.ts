@@ -1,4 +1,4 @@
-import { IsString, Matches, MinLength, MaxLength } from 'class-validator';
+import { IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 const IRAN_MOBILE_REGEX = /^09\d{9}$/;
 const OTP_REGEX = /^\d{6}$/;
@@ -21,4 +21,9 @@ export class VerifyRegisterDto {
     message: 'رمز عبور باید حداقل ۸ کاراکتر و شامل حرف و عدد باشد',
   })
   password: string;
+
+  // کد ارجاع دوست (اختیاری) — همون شناسه‌ی کاربر معرف
+  @IsOptional()
+  @IsString()
+  referralCode?: string;
 }

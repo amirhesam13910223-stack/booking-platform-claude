@@ -18,4 +18,8 @@ export class HoldBookingDto {
   // از availability باشه (سرور دوباره اعتبارسنجی می‌کنه).
   @IsDateString()
   startTime: string;
+
+  @IsOptional()
+  @IsString()
+  couponCode?: string;
 }

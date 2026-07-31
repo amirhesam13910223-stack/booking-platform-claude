@@ -4,6 +4,9 @@ import { BookingService } from './booking.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { RedisLockService } from '../../common/redis/redis-lock.service';
 import { AvailabilityService } from './availability.service';
+import { CouponService } from '../coupon/coupon.service';
+import { LoyaltyService } from '../loyalty/loyalty.service';
+import { ReferralService } from '../referral/referral.service';
 
 describe('BookingService', () => {
   let service: BookingService;
@@ -17,6 +20,9 @@ describe('BookingService', () => {
   };
   let lock: { withLock: jest.Mock; acquire: jest.Mock; release: jest.Mock };
   let availability: { getFreeSlots: jest.Mock };
+  let coupon: { checkAndRedeem: jest.Mock };
+  let loyalty: { earnFromPurchase: jest.Mock };
+  let referral: { rewardIfEligible: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
@@ -33,6 +39,9 @@ describe('BookingService', () => {
       release: jest.fn(),
     };
     availability = { getFreeSlots: jest.fn() };
+    coupon = { checkAndRedeem: jest.fn() };
+    loyalty = { earnFromPurchase: jest.fn() };
+    referral = { rewardIfEligible: jest.fn() };
 
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -40,6 +49,9 @@ describe('BookingService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: RedisLockService, useValue: lock },
         { provide: AvailabilityService, useValue: availability },
+        { provide: CouponService, useValue: coupon },
+        { provide: LoyaltyService, useValue: loyalty },
+        { provide: ReferralService, useValue: referral },
       ],
     }).compile();
 
@@ -163,38 +175,48 @@ describe('BookingService', () => {
       );
     });
 
-    it('خدمتی که نیاز به بیعانه داره رو به PENDING (نه CONFIRMED مستقیم) می‌بره', async () => {
+    it('خدمتی که نیاز به بیعانه داره رو به PENDING می‌بره و هنوز پاداشی نمی‌ده', async () => {
       prisma.booking.findFirst.mockResolvedValue({
         id: 'booking1',
         status: 'HOLD',
         serviceId: 'svc1',
+        priceSnapshot: 100000,
+        discountAmount: 0,
         holdExpiresAt: new Date(Date.now() + 100000),
       });
       prisma.service.findUnique.mockResolvedValue({ requiresDeposit: true });
-      prisma.booking.update.mockResolvedValue({ id: 'booking1', status: 'PENDING' });
+      const tx = { booking: { update: jest.fn().mockResolvedValue({ id: 'booking1', status: 'PENDING' }) } };
+      prisma.$transaction.mockImplementation((fn: (tx: unknown) => unknown) => fn(tx));
 
       const result = await service.confirm('booking1', 'user1');
 
-      expect(prisma.booking.update).toHaveBeenCalledWith({
+      expect(tx.booking.update).toHaveBeenCalledWith({
         where: { id: 'booking1' },
         data: { status: 'PENDING', holdExpiresAt: null },
       });
       expect(result.status).toBe('PENDING');
+      expect(loyalty.earnFromPurchase).not.toHaveBeenCalled(); // پاداش فقط موقع پرداخت واقعی بیعانه
     });
 
-    it('خدمت بدون بیعانه مستقیم CONFIRMED می‌شه', async () => {
+    it('خدمت بدون بیعانه مستقیم CONFIRMED می‌شه و پاداش خرید اهدا میشه', async () => {
       prisma.booking.findFirst.mockResolvedValue({
         id: 'booking1',
         status: 'HOLD',
         serviceId: 'svc1',
+        priceSnapshot: 100000,
+        discountAmount: 10000,
         holdExpiresAt: new Date(Date.now() + 100000),
       });
       prisma.service.findUnique.mockResolvedValue({ requiresDeposit: false });
-      prisma.booking.update.mockResolvedValue({ id: 'booking1', status: 'CONFIRMED' });
+      const tx = { booking: { update: jest.fn().mockResolvedValue({ id: 'booking1', status: 'CONFIRMED' }) } };
+      prisma.$transaction.mockImplementation((fn: (tx: unknown) => unknown) => fn(tx));
 
       const result = await service.confirm('booking1', 'user1');
 
       expect(result.status).toBe('CONFIRMED');
+      // مبلغ پاداش باید بعد از کسر تخفیف باشه: ۱۰۰٬۰۰۰ - ۱۰٬۰۰۰ = ۹۰٬۰۰۰
+      expect(loyalty.earnFromPurchase).toHaveBeenCalledWith(tx, 'user1', 90000, 'خرید رزرو');
+      expect(referral.rewardIfEligible).toHaveBeenCalledWith(tx, 'user1');
     });
   });
 

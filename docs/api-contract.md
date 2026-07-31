@@ -14,7 +14,7 @@
 | Method | Path | توضیح | دسترسی |
 |---|---|---|---|
 | POST | /auth/register/request-otp | ارسال OTP برای ثبت‌نام | عمومی |
-| POST | /auth/register/verify | تایید OTP + ساخت حساب + صدور توکن | عمومی |
+| POST | /auth/register/verify | تایید OTP + ساخت حساب + صدور توکن (فیلد اختیاری `referralCode`) | عمومی |
 | POST | /auth/login | ورود با شماره+رمز | عمومی |
 | POST | /auth/login/otp/request | درخواست OTP برای ورود | عمومی |
 | POST | /auth/login/otp/verify | تایید OTP و ورود | عمومی |
@@ -92,7 +92,7 @@
 | Method | Path | توضیح | دسترسی |
 |---|---|---|---|
 | GET | /discover/availability/:businessId?serviceId&staffMemberId&branchId&date | زمان‌های آزاد | عمومی |
-| POST | /bookings/hold | ایجاد قفل موقت روی یک بازه (concurrency-safe) | کاربر لاگین‌شده |
+| POST | /bookings/hold | ایجاد قفل موقت روی یک بازه (concurrency-safe؛ فیلد اختیاری `couponCode`) | کاربر لاگین‌شده |
 | POST | /bookings/recurring | رزرو تکرارشونده‌ی هفتگی (all-or-nothing، حداکثر ۵۲ جلسه) | کاربر لاگین‌شده |
 | POST | /bookings/:id/confirm | تایید نهایی (به PENDING اگر بیعانه لازمه، وگرنه CONFIRMED) | کاربر لاگین‌شده (مالک رزرو) |
 | POST | /bookings/recurring/:groupId/confirm | تایید همه‌ی جلسات یک رزرو تکرارشونده | کاربر لاگین‌شده (مالک) |
@@ -119,11 +119,20 @@
 | POST | /wallet/topup | شارژ کیف پول (حداقل ۱۰٬۰۰۰ تومان) | کاربر لاگین‌شده |
 
 ## Discount / Loyalty / Referral
+
+**نکته‌ی پیاده‌سازی**: کوپن موقع `POST /bookings/hold` با فیلد اختیاری `couponCode` در بدنه اعمال میشه (نه یک endpoint جدا برای "مصرف") — چون مصرف کوپن باید داخل همون تراکنش ساخت رزرو اتمیک باشه. `/coupons/validate` فقط dry-run هست (چیزی رو mutate نمی‌کنه)، برای پیش‌نمایش تخفیف قبل از رزرو. امتیاز وفاداری و پاداش ارجاع خودکار و در پس‌زمینه، در لحظه‌ی "خرید قطعی" (تایید رزرو بدون بیعانه، یا پرداخت موفق بیعانه) اهدا میشن — کاربر مستقیم درخواستشون نمی‌ده.
+
 | Method | Path | توضیح | دسترسی |
 |---|---|---|---|
-| POST | /coupons/validate | اعتبارسنجی کد تخفیف | کاربر لاگین‌شده |
-| GET | /loyalty/me | امتیاز و سطح وفاداری | کاربر لاگین‌شده |
-| GET | /referral/me | لینک/کد ارجاع من | کاربر لاگین‌شده |
+| POST | /coupons/validate | اعتبارسنجی کد تخفیف (dry-run) | کاربر لاگین‌شده |
+| POST | /businesses/:id/coupons | ساخت کوپن مخصوص کسب‌وکار | OWNER/MANAGER |
+| GET | /businesses/:id/coupons | لیست کوپن‌های کسب‌وکار | OWNER/MANAGER |
+| PATCH | /businesses/:id/coupons/:couponId | ویرایش کوپن کسب‌وکار | OWNER/MANAGER |
+| POST | /admin/coupons | ساخت کوپن سراسری پلتفرم | ادمین |
+| GET | /admin/coupons | لیست کوپن‌های سراسری | ادمین |
+| PATCH | /admin/coupons/:couponId | ویرایش کوپن سراسری | ادمین |
+| GET | /loyalty/me | امتیاز، سطح، و ۲۰ تراکنش اخیر وفاداری | کاربر لاگین‌شده |
+| GET | /referral/me | کد ارجاع من (همون شناسه‌ی کاربر) | کاربر لاگین‌شده |
 
 ## Review
 | Method | Path | توضیح | دسترسی |

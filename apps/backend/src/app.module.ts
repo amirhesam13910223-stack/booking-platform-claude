@@ -24,8 +24,11 @@ import { PaymentGatewayModule } from './common/payment-gateway/payment-gateway.m
 import { PaymentModule } from './modules/payment/payment.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { SettlementModule } from './modules/settlement/settlement.module';
-// ماژول‌های دامنه‌ی بعدی (فاز ۵ به بعد) این‌جا اضافه میشن:
-// DiscountModule, LoyaltyModule, ReferralModule, ReviewModule, ...
+import { CouponModule } from './modules/coupon/coupon.module';
+import { LoyaltyModule } from './modules/loyalty/loyalty.module';
+import { ReferralModule } from './modules/referral/referral.module';
+// ماژول‌های دامنه‌ی بعدی (فاز ۶ به بعد) این‌جا اضافه میشن:
+// ReviewModule, NotificationModule, ...
 
 @Module({
   imports: [
@@ -53,6 +56,9 @@ import { SettlementModule } from './modules/settlement/settlement.module';
     PaymentModule,
     WalletModule,
     SettlementModule,
+    CouponModule,
+    LoyaltyModule,
+    ReferralModule,
   ],
   providers: [
     // ترتیب مهمه: اول احراز هویت (کاربر کیه)، بعد نقش سراسری (ادمین یا نه)،

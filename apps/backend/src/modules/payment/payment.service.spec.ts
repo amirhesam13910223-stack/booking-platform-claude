@@ -4,6 +4,7 @@ import { PaymentService } from './payment.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { PAYMENT_GATEWAY } from '../../common/payment-gateway/payment-gateway.interface';
 import { ConfigService } from '@nestjs/config';
+import { BookingService } from '../booking/booking.service';
 
 describe('PaymentService', () => {
   let service: PaymentService;
@@ -16,6 +17,7 @@ describe('PaymentService', () => {
     $transaction: jest.Mock;
   };
   let gateway: { createSession: jest.Mock; verify: jest.Mock };
+  let bookingService: { awardPostPurchaseRewards: jest.Mock };
 
   beforeEach(async () => {
     prisma = {
@@ -27,12 +29,14 @@ describe('PaymentService', () => {
       $transaction: jest.fn(),
     };
     gateway = { createSession: jest.fn(), verify: jest.fn() };
+    bookingService = { awardPostPurchaseRewards: jest.fn() };
 
     const moduleRef = await Test.createTestingModule({
       providers: [
         PaymentService,
         { provide: PrismaService, useValue: prisma },
         { provide: PAYMENT_GATEWAY, useValue: gateway },
+        { provide: BookingService, useValue: bookingService },
         { provide: ConfigService, useValue: { get: (_k: string, fallback?: string) => fallback } },
       ],
     }).compile();
@@ -75,7 +79,7 @@ describe('PaymentService', () => {
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('پرداخت موفق از کیف پول: موجودی کم میشه و رزرو CONFIRMED میشه', async () => {
+    it('پرداخت موفق از کیف پول: موجودی کم میشه، رزرو CONFIRMED میشه، و پاداش خرید اهدا میشه', async () => {
       prisma.booking.findFirst.mockResolvedValue({ id: 'b1', status: 'PENDING', depositRequired: 50000 });
       const tx = {
         wallet: {
@@ -84,7 +88,11 @@ describe('PaymentService', () => {
         },
         walletTransaction: { create: jest.fn() },
         payment: { create: jest.fn().mockResolvedValue({ id: 'p1', status: 'SUCCESS' }) },
-        booking: { update: jest.fn() },
+        booking: {
+          update: jest
+            .fn()
+            .mockResolvedValue({ id: 'b1', priceSnapshot: 250000, discountAmount: 0 }),
+        },
       };
       prisma.$transaction.mockImplementation((fn: (tx: unknown) => unknown) => fn(tx));
 
@@ -92,6 +100,7 @@ describe('PaymentService', () => {
 
       expect(tx.wallet.update).toHaveBeenCalledWith({ where: { userId: 'user1' }, data: { balance: 50000 } });
       expect(tx.booking.update).toHaveBeenCalledWith({ where: { id: 'b1' }, data: { status: 'CONFIRMED' } });
+      expect(bookingService.awardPostPurchaseRewards).toHaveBeenCalledWith(tx, 'user1', 250000);
       expect(result.paidFromWallet).toBe(true);
     });
 
@@ -137,7 +146,7 @@ describe('PaymentService', () => {
       expect(result.status).toBe('FAILED');
     });
 
-    it('verify موفق برای بیعانه‌ی رزرو، رزرو رو CONFIRMED می‌کنه', async () => {
+    it('verify موفق برای بیعانه‌ی رزرو، رزرو رو CONFIRMED می‌کنه و پاداش خرید اهدا میشه', async () => {
       prisma.payment.findFirst.mockResolvedValue({
         id: 'p1',
         status: 'INITIATED',
@@ -150,7 +159,9 @@ describe('PaymentService', () => {
       const tx = {
         payment: { update: jest.fn() },
         booking: {
-          findUnique: jest.fn().mockResolvedValue({ id: 'b1', status: 'PENDING' }),
+          findUnique: jest
+            .fn()
+            .mockResolvedValue({ id: 'b1', status: 'PENDING', priceSnapshot: 250000, discountAmount: 0 }),
           update: jest.fn(),
         },
       };
@@ -159,6 +170,7 @@ describe('PaymentService', () => {
       const result = await service.handleCallback('mock', 'ref1');
 
       expect(tx.booking.update).toHaveBeenCalledWith({ where: { id: 'b1' }, data: { status: 'CONFIRMED' } });
+      expect(bookingService.awardPostPurchaseRewards).toHaveBeenCalledWith(tx, 'user1', 250000);
       expect(result.status).toBe('SUCCESS');
     });
 

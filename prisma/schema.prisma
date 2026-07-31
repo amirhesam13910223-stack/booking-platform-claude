@@ -57,6 +57,7 @@ model User {
   ticketMessages   TicketMessage[]
   referralsAsFrom  Referral[]        @relation("ReferralFrom")
   referralsAsTo    Referral[]        @relation("ReferralTo")
+  couponUsages     CouponUsage[]
   auditLogs        AuditLog[]
   notifications    Notification[]
   otpCodes         OtpCode[]
@@ -309,6 +310,8 @@ model Booking {
   cancelledAt   DateTime?
   cancelReason  String?
   recurringGroupId String? // رزروهای تکرارشونده که در یک درخواست ساخته شدن، این id مشترک رو دارن
+  couponCode       String?  // کد کوپن اعمال‌شده (snapshot، حتی اگه کوپن بعداً غیرفعال بشه)
+  discountAmount   Decimal  @default(0) @db.Decimal(12, 2)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -447,9 +450,28 @@ model Coupon {
   validTo      DateTime
   isActive     Boolean    @default(true)
 
-  business Business? @relation(fields: [businessId], references: [id])
+  business Business?     @relation(fields: [businessId], references: [id])
+  usages   CouponUsage[]
 
   @@index([code])
+}
+
+// هر کاربر فقط یک‌بار می‌تونه از یک کوپن استفاده کنه — سیاست پیش‌فرض
+// ساده و قابل‌فهم برای جلوگیری از سوءاستفاده؛ سقف کلی هم با
+// Coupon.usageCount/usageLimit جدا کنترل میشه.
+model CouponUsage {
+  id             String   @id @default(uuid())
+  couponId       String
+  userId         String
+  bookingId      String?
+  discountAmount Decimal  @db.Decimal(12, 2)
+  createdAt      DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([couponId, userId])
+  @@index([userId])
 }
 
 model LoyaltyAccount {
